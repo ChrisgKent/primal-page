@@ -6,7 +6,7 @@
 
 ## Details
 
-```JSON
+```json
 {'ampliconsize': 400, 'schemeversion': 'v1.0.0', 'schemename': 'test', 'primer.bed.md5': 'f1a91eeadf561d9762cb10bfdb324528', 'reference.fasta.md5': '3e8964c1ae8dd78e5e35b183903e32df', 'validated': False, 'citations': [], 'authors': ['quick lab', 'artic network'], 'algorithmversion': 'primaldigest:1.1.3'}
 ```
 
