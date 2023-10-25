@@ -43,7 +43,7 @@ def parse_version(
 
     # Grab index.json fields
     version_dict["algorithmversion"] = info_dict["algorithmversion"]
-    version_dict["validated"] = info_dict["validated"]
+    version_dict["status"] = info_dict["status"]
     version_dict["authors"] = info_dict["authors"]
     version_dict["citations"] = info_dict["citations"]
 
