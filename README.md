@@ -21,3 +21,9 @@ This is the tooling for working with the primerschemes index
 - ```change-status```
 
 ```remove```: Remove a scheme from the repo   
+
+
+## Info.json schemma
+
+The main purpose of info.json is to store vital metadata, which is parsed into the repo-manifest. 
+

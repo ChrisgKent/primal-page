@@ -1,0 +1,35 @@
+2023-11-21 at 12:19:38 | INFO | Creating the Mismatch Database
+2023-11-21 at 12:19:38 | INFO | Created: test_covid/work/mismatch.db
+2023-11-21 at 12:19:38 | INFO | Read in MSA: MN908947.3	seqs:1	cols:29903
+2023-11-21 at 12:19:43 | INFO | MN908947.3: digested to 16606 FKmers and 17106 RKmers
+2023-11-21 at 12:20:59 | INFO | MN908947.3: Generated 1837739 possible amplicons
+2023-11-21 at 12:20:59 | INFO | Added first amplicon for MN908947.3: 23	1150	1
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 1069	2198	2
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 2099	3229	1
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 3156	4284	2
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 4157	5287	1
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 5205	6330	2
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 6253	7389	1
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 7304	8433	2
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 8342	9474	1
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 9382	10512	2
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 10436	11565	1
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 11476	12604	2
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 12514	13647	1
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 13563	14692	2
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 14619	15744	1
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 15658	16788	2
+2023-11-21 at 12:20:59 | INFO | Added overlapping amplicon for MN908947.3: 16708	17823	1
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 17750	18876	2
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 18803	19938	1
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 19857	20986	2
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 20889	22014	1
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 21926	23057	2
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 22943	24065	1
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 23994	25120	2
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 24997	26123	1
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 26048	27175	2
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 27104	28237	1
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 28154	29275	2
+2023-11-21 at 12:21:00 | INFO | Added overlapping amplicon for MN908947.3: 28742	29873	1
+2023-11-21 at 12:21:00 | INFO | Writting output files

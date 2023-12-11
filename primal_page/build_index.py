@@ -18,7 +18,7 @@ def create_rawlink(repo, scheme_name, length, version, file, pclass) -> str:
 
 def parse_version(
     version_path, repo_url, scheme_name, length, version, pclass
-) -> dict[str:str]:
+) -> dict[str, str]:
     version_dict = dict()
 
     # Read in the info.json file
@@ -37,7 +37,6 @@ def parse_version(
     version_dict["schemeversion"] = info_dict["schemeversion"]
     version_dict["ampliconsize"] = info_dict["ampliconsize"]
 
-    
     # Add the primer.bed file
     primerbed = version_path / "primer.bed"
     version_dict["primer_bed_url"] = create_rawlink(
@@ -70,7 +69,7 @@ def parse_version(
     return version_dict
 
 
-def parse_length(length_path, repo_url, scheme_name, length, pclass) -> dict[str:str]:
+def parse_length(length_path, repo_url, scheme_name, length, pclass) -> dict[str, str]:
     length_dict = dict()
 
     # Get all the versions
@@ -95,7 +94,7 @@ def parse_length(length_path, repo_url, scheme_name, length, pclass) -> dict[str
     return length_dict
 
 
-def parse_scheme(scheme_path, repo_url, scheme_name, pclass) -> dict[str:str]:
+def parse_scheme(scheme_path, repo_url, scheme_name, pclass) -> dict[str, str]:
     scheme_dict = dict()
 
     # Get all the lengths
@@ -133,7 +132,9 @@ def check_consistency(existing_json, new_json):
     Checks that paths contained in both existing_json and new_json have the same hashes (files unaltered)
     """
     # Find all paths
-    existing_paths: set[tuple[str]] = {x for x in traverse_json(existing_json)}
+    existing_paths: set[tuple[str, str, str, str]] = {
+        x for x in traverse_json(existing_json)
+    }
     # Find all new paths
     new_paths = {x for x in traverse_json(new_json)}
 
@@ -168,7 +169,7 @@ def create_index(server_url, repo_url):
     # For any Scheme, we can generate a JSON file with the following format:
     json_dict = dict()
     # Parse panels and schemes
-    pclasses = ["primerschemes", "primerpanels"]
+    pclasses = ["primerschemes"]
     for pclass in pclasses:
         # Create a dict to hold all the pclass data
         pclass_dict = dict()
