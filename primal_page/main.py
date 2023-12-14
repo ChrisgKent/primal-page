@@ -4,13 +4,18 @@ from typing_extensions import Annotated
 import shutil
 import hashlib
 import json
-import github
-import os
-from primal_page.build_index import create_index
-from primal_page.schemas import PrimerClass, SchemeStatus, Info
+from typing import Optional
+import re
 
-SCHEMENAME_PATTERN = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
-VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"
+from primal_page.build_index import create_index
+from primal_page.schemas import (
+    PrimerClass,
+    SchemeStatus,
+    Info,
+    determine_primername_version,
+    PrimerNameVersion,
+)
+
 
 # Create the typer app
 app = typer.Typer()
@@ -60,7 +65,7 @@ def hashfile(fname: pathlib.Path) -> str:
     return hash_md5.hexdigest()
 
 
-def validate_primer_bed(primer_bed: pathlib.Path, fix: bool = False):
+def validate_primer_bed(primer_bed: pathlib.Path, fix: bool = False) -> bool:
     """Validate a primer bed file"""
     with open(primer_bed, "r") as f:
         for lineindex, line in enumerate(f.readlines()):
@@ -73,14 +78,20 @@ def validate_primer_bed(primer_bed: pathlib.Path, fix: bool = False):
                 )
 
             # Check for valid primername
-            primername = data[3].split("_")
-            if len(primername) == 4 and primername[-1].isdigit():
-                # Valid name
-                pass
-            else:
-                raise ValueError(
-                    f"Line {lineindex} in {primer_bed} does not have a valid primername '{data[3]}'"
-                )
+            raw_primername = data[3].strip()
+
+            match determine_primername_version(raw_primername):
+                case PrimerNameVersion.V1:
+                    # Valid name
+                    pass
+                case PrimerNameVersion.V2:
+                    # Valid version 2 name
+                    pass
+                case PrimerNameVersion.INVALID:
+                    raise ValueError(
+                        f"Line {lineindex} in {primer_bed} does not have a valid primername '{raw_primername}'"
+                    )
+
     return True
 
 
@@ -219,14 +230,14 @@ def create(
         "artic network",
     ],
     primerbed: Annotated[
-        pathlib.Path,
+        Optional[pathlib.Path],
         typer.Option(
             help="Manually specify the primer bed file, default is *primer.bed",
             readable=True,
         ),
     ] = None,
     reference: Annotated[
-        pathlib.Path,
+        Optional[pathlib.Path],
         typer.Option(
             help="Manually specify the referance.fasta file, default is *.fasta",
             readable=True,
@@ -237,19 +248,20 @@ def create(
         typer.Option(help="Where to output the scheme", writable=True),
     ] = pathlib.Path("primerschemes"),
     configpath: Annotated[
-        pathlib.Path,
+        Optional[pathlib.Path],
         typer.Option(
             help="Where the config.json file is located", readable=True, exists=True
         ),
     ] = None,
     algorithmversion: Annotated[
-        str, typer.Option(help="The version of primalscheme or other")
+        Optional[str], typer.Option(help="The version of primalscheme or other")
     ] = None,
     description: Annotated[
-        str, typer.Option(help="A description of the scheme")
+        Optional[str], typer.Option(help="A description of the scheme")
     ] = None,
     derivedfrom: Annotated[
-        str, typer.Option(help="Which scheme has this scheme been derived from")
+        Optional[str],
+        typer.Option(help="Which scheme has this scheme been derived from"),
     ] = None,
     primerclass: Annotated[
         PrimerClass, typer.Option(help="The primer class")
@@ -555,16 +567,19 @@ def remove_citation(
 def build_index(
     gitaccount: Annotated[
         str,
-        typer.Argument(help="The name of the github account"),
+        typer.Option(help="The name of the github account"),
     ] = "quick-lab",
     gitserver: Annotated[
         str,
-        typer.Argument(help="The name of the github server"),
+        typer.Option(help="The name of the github server"),
     ] = "https://github.com/",
+    parentdir: Annotated[
+        pathlib.Path, typer.Option(help="The parent directory")
+    ] = pathlib.Path("."),
 ):
     """Build an index.json file from all schemes in the directory"""
 
-    create_index(gitserver, gitaccount)
+    create_index(gitserver, gitaccount, parentdir)
 
 
 @app.command()

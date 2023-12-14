@@ -56,7 +56,7 @@ def parse_version(
         repo_url, scheme_name, length, version.name, "info.json", pclass
     )
 
-    # Check the hashes in the config.json file match the generated hashes
+    # Check the hashes in the info.json file match the generated hashes
     if version_dict["primer_bed_md5"] != info_dict["primer_bed_md5"]:
         raise ValueError(
             f"Hash mismatch for {version_dict['primer_bed_md5']}. Expected {version_dict['primer_bed_md5']} but got {info_dict['primer_bed_md5']}"
@@ -165,15 +165,33 @@ def check_consistency(existing_json, new_json):
             )
 
 
-def create_index(server_url, repo_url):
+import json
+import pathlib
+
+
+def create_index(server_url, repo_url, parent_dir=pathlib.Path(".")):
+    """
+    Create an index JSON file for the given server and repository URLs.
+
+    Args:
+        server_url (str): The URL of the server.
+        repo_url (str): The URL of the repository.
+        parent_dir (str, optional): The parent directory path containing the primerscheme dir. index.json will be writem to parent_dir/index.json Defaults to ".".
+
+    Returns:
+        bool: True if the index JSON file is created successfully, False otherwise.
+    """
     # For any Scheme, we can generate a JSON file with the following format:
     json_dict = dict()
+    # Ensure the parent_dir is a pathlib.Path
+    if type(parent_dir) == str:
+        parent_dir = pathlib.Path(parent_dir)
     # Parse panels and schemes
     pclasses = ["primerschemes"]
     for pclass in pclasses:
         # Create a dict to hold all the pclass data
         pclass_dict = dict()
-        for path in pathlib.Path(pclass).iterdir():
+        for path in (parent_dir / pclass).iterdir():
             # Only add directories
             if not path.is_dir() or path.name.startswith("."):
                 continue
@@ -188,7 +206,6 @@ def create_index(server_url, repo_url):
     # Read in the existing index.json file
     with open("index.json") as f:
         existing_json_dict = json.load(f)
-
     # Check persistence of existing files
     check_consistency(existing_json_dict, json_dict)
 
@@ -201,4 +218,5 @@ def create_index(server_url, repo_url):
 if __name__ == "__main__":
     server_url = sys.argv[1]
     repo_url = sys.argv[2]
+
     create_index(server_url, repo_url)

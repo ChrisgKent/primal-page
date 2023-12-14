@@ -7,6 +7,51 @@ from enum import Enum
 SCHEMENAME_PATTERN = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"
 
+# Primername versions
+V2_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)_[0-9]+$"
+V1_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)(_ALT|_alt)*$"
+
+
+class PrimerNameVersion(Enum):
+    V1 = "v1"
+    V2 = "v2"
+    INVALID = "invalid"  # Not applicable
+
+
+def determine_primername_version(primername: str) -> PrimerNameVersion:
+    """
+    Determine the primername version
+    :param primername: The primername to check
+    :return: The primername version
+    """
+    if re.search(V2_PRIMERNAME, primername):
+        return PrimerNameVersion.V2
+    elif re.search(V1_PRIMERNAME, primername):
+        return PrimerNameVersion.V1
+    else:
+        return PrimerNameVersion.INVALID
+
+
+def convert_v1_primernames_to_v2(primername: str) -> str:
+    """
+    Convert a v1 primername to a v2 primername. Cannot handle alt primers
+    :param primername: The v1 primername
+    :return: The v2 primername
+    """
+    # Check if this is a v1 primername
+    if determine_primername_version(primername) != PrimerNameVersion.V1:
+        raise ValueError(f"{primername} is not a valid v1 primername")
+
+    # Split the primername
+    data = primername.split("_")
+    # Remove the alt
+    if data[-1] == "alt" or data[-1] == "ALT":
+        raise ValueError(f"{primername} is a v1 alt primername, cannot convert")
+
+    data.append("0")
+    # Join back together
+    return "_".join(data)
+
 
 class PrimerClass(Enum):
     PRIMERSCHEMES = "primerschemes"

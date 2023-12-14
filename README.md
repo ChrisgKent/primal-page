@@ -27,3 +27,12 @@ This is the tooling for working with the primerschemes index
 
 The main purpose of info.json is to store vital metadata, which is parsed into the repo-manifest. 
 
+### Create 
+
+The create command has two main modes of use. 
+- Where the scheme directory is provided, and used to parse; --primerbed, --reference, --configpath, --algorithmversion.
+- The options are provided via the CLI
+
+If a field cannot be parsed via the scheme directory, it will require it to be spesified via the CLI.
+- CLI args always override the parsed args.
+
