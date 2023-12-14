@@ -18,7 +18,7 @@ def create_rawlink(repo, scheme_name, length, version, file, pclass) -> str:
 
 def parse_version(
     version_path, repo_url, scheme_name, length, version, pclass
-) -> dict[str:str]:
+) -> dict[str, str]:
     version_dict = dict()
 
     # Read in the info.json file
@@ -33,6 +33,9 @@ def parse_version(
     version_dict["species"] = info_dict["species"]
     version_dict["license"] = info_dict["license"]
     version_dict["primerclass"] = info_dict["primerclass"]
+    version_dict["schemename"] = info_dict["schemename"]
+    version_dict["schemeversion"] = info_dict["schemeversion"]
+    version_dict["ampliconsize"] = info_dict["ampliconsize"]
 
     # Add the primer.bed file
     primerbed = version_path / "primer.bed"
@@ -53,20 +56,20 @@ def parse_version(
         repo_url, scheme_name, length, version.name, "info.json", pclass
     )
 
-    # Check the hashes in the config.json file match the generated hashes
+    # Check the hashes in the info.json file match the generated hashes
     if version_dict["primer_bed_md5"] != info_dict["primer_bed_md5"]:
         raise ValueError(
-            f"Hash mismatch for {version_dict['primer.bed.url']}. Expected {version_dict['primer_bed_md5']} but got {info_dict['primer_bed_md5']}"
+            f"Hash mismatch for {version_dict['primer_bed_md5']}. Expected {version_dict['primer_bed_md5']} but got {info_dict['primer_bed_md5']}"
         )
     if version_dict["reference_fasta_md5"] != info_dict["reference_fasta_md5"]:
         raise ValueError(
-            f"Hash mismatch for {version_dict['reference.fasta.url']}. Expected {version_dict['reference_fasta_md5']} but got {info_dict['reference_fasta_md5']}"
+            f"Hash mismatch for {version_dict['reference_fasta_md5']}. Expected {version_dict['reference_fasta_md5']} but got {info_dict['reference_fasta_md5']}"
         )
 
     return version_dict
 
 
-def parse_length(length_path, repo_url, scheme_name, length, pclass) -> dict[str:str]:
+def parse_length(length_path, repo_url, scheme_name, length, pclass) -> dict[str, str]:
     length_dict = dict()
 
     # Get all the versions
@@ -91,7 +94,7 @@ def parse_length(length_path, repo_url, scheme_name, length, pclass) -> dict[str
     return length_dict
 
 
-def parse_scheme(scheme_path, repo_url, scheme_name, pclass) -> dict[str:str]:
+def parse_scheme(scheme_path, repo_url, scheme_name, pclass) -> dict[str, str]:
     scheme_dict = dict()
 
     # Get all the lengths
@@ -129,7 +132,9 @@ def check_consistency(existing_json, new_json):
     Checks that paths contained in both existing_json and new_json have the same hashes (files unaltered)
     """
     # Find all paths
-    existing_paths: set[tuple[str]] = {x for x in traverse_json(existing_json)}
+    existing_paths: set[tuple[str, str, str, str]] = {
+        x for x in traverse_json(existing_json)
+    }
     # Find all new paths
     new_paths = {x for x in traverse_json(new_json)}
 
@@ -160,15 +165,33 @@ def check_consistency(existing_json, new_json):
             )
 
 
-def create_index(server_url, repo_url):
+import json
+import pathlib
+
+
+def create_index(server_url, repo_url, parent_dir=pathlib.Path(".")):
+    """
+    Create an index JSON file for the given server and repository URLs.
+
+    Args:
+        server_url (str): The URL of the server.
+        repo_url (str): The URL of the repository.
+        parent_dir (str, optional): The parent directory path containing the primerscheme dir. index.json will be writem to parent_dir/index.json Defaults to ".".
+
+    Returns:
+        bool: True if the index JSON file is created successfully, False otherwise.
+    """
     # For any Scheme, we can generate a JSON file with the following format:
     json_dict = dict()
+    # Ensure the parent_dir is a pathlib.Path
+    if type(parent_dir) == str:
+        parent_dir = pathlib.Path(parent_dir)
     # Parse panels and schemes
-    pclasses = ["primerschemes", "primerpanels"]
+    pclasses = ["primerschemes"]
     for pclass in pclasses:
         # Create a dict to hold all the pclass data
         pclass_dict = dict()
-        for path in pathlib.Path(pclass).iterdir():
+        for path in (parent_dir / pclass).iterdir():
             # Only add directories
             if not path.is_dir() or path.name.startswith("."):
                 continue
@@ -183,7 +206,6 @@ def create_index(server_url, repo_url):
     # Read in the existing index.json file
     with open("index.json") as f:
         existing_json_dict = json.load(f)
-
     # Check persistence of existing files
     check_consistency(existing_json_dict, json_dict)
 
@@ -196,4 +218,5 @@ def create_index(server_url, repo_url):
 if __name__ == "__main__":
     server_url = sys.argv[1]
     repo_url = sys.argv[2]
+
     create_index(server_url, repo_url)
