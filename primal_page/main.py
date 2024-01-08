@@ -5,7 +5,6 @@ import shutil
 import hashlib
 import json
 from typing import Optional
-import re
 
 from primal_page.build_index import create_index
 from primal_page.schemas import (
@@ -221,7 +220,7 @@ def create(
     ],
     schemestatus: Annotated[
         SchemeStatus, typer.Option(help="Scheme status")
-    ] = SchemeStatus.DRAFT,
+    ] = SchemeStatus.DRAFT.value,  # type: ignore
     citations: Annotated[
         list[str], typer.Option(help="Any associated citations. Please use DOI")
     ] = [],
@@ -265,7 +264,7 @@ def create(
     ] = None,
     primerclass: Annotated[
         PrimerClass, typer.Option(help="The primer class")
-    ] = PrimerClass.PRIMERSCHEMES,
+    ] = PrimerClass.PRIMERSCHEMES.value,  # type: ignore
 ):
     """Create a new scheme in the required format"""
 
@@ -576,10 +575,13 @@ def build_index(
     parentdir: Annotated[
         pathlib.Path, typer.Option(help="The parent directory")
     ] = pathlib.Path("."),
+    git_commit_sha: Annotated[
+        Optional[str], typer.Option(help="The git commit")
+    ] = None,
 ):
     """Build an index.json file from all schemes in the directory"""
 
-    create_index(gitserver, gitaccount, parentdir)
+    create_index(gitserver, gitaccount, parentdir, git_commit_sha)
 
 
 @app.command()
