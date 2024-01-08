@@ -55,7 +55,6 @@ def convert_v1_primernames_to_v2(primername: str) -> str:
 
 class PrimerClass(Enum):
     PRIMERSCHEMES = "primerschemes"
-    PRIMERPANELS = "primerpanels"
 
 
 class SchemeStatus(Enum):

@@ -102,7 +102,7 @@ def create(
                 if version in pclass_json[scheme_name][size]:
                     raise sys.exit(
                         f"{scheme_name} {size} {version} already exists in index.json"
-                    )
+                    )  # type: ignore
 
     primal_nf_scheme_dir = primal_nf_dir / primal_nf_dir.name
     common_name, taxid = primal_nf_dir.name.split("--")

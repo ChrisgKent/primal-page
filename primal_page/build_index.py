@@ -2,6 +2,7 @@ import pathlib
 import json
 import sys
 import hashlib
+from primal_page.schemas import PrimerClass
 
 
 def hashfile(fname):
@@ -123,7 +124,7 @@ def traverse_json(json_dict):
     for pclass, pclass_dict in json_dict.items():
         for scheme_name, scheme_dict in pclass_dict.items():
             for length, length_dict in scheme_dict.items():
-                for version, _version_dict in length_dict.items():
+                for version in length_dict.keys():
                     yield (pclass, scheme_name, length, version)
 
 
@@ -165,11 +166,9 @@ def check_consistency(existing_json, new_json):
             )
 
 
-import json
-import pathlib
-
-
-def create_index(server_url, repo_url, parent_dir=pathlib.Path(".")):
+def create_index(
+    server_url, repo_url, parent_dir=pathlib.Path("."), git_commit: str | None = None
+):
     """
     Create an index JSON file for the given server and repository URLs.
 
@@ -187,7 +186,7 @@ def create_index(server_url, repo_url, parent_dir=pathlib.Path(".")):
     if type(parent_dir) == str:
         parent_dir = pathlib.Path(parent_dir)
     # Parse panels and schemes
-    pclasses = ["primerschemes"]
+    pclasses = [i.value for i in PrimerClass]
     for pclass in pclasses:
         # Create a dict to hold all the pclass data
         pclass_dict = dict()
@@ -205,9 +204,18 @@ def create_index(server_url, repo_url, parent_dir=pathlib.Path(".")):
 
     # Read in the existing index.json file
     with open("index.json") as f:
-        existing_json_dict = json.load(f)
-    # Check persistence of existing files
+        existing_json_dict: dict = json.load(f)
+        # Remove the github commit sha
+        _old_commit = existing_json_dict.pop("github-commit-sha", None)
+
+    # Check persistence of existing key files
     check_consistency(existing_json_dict, json_dict)
+
+    # Update the github commit
+    if git_commit is not None:
+        json_dict[
+            "github-commit-sha"
+        ] = git_commit  # This is added so that the index.json changes when the github commit changes
 
     with open("index.json", "w") as f:
         json.dump(json_dict, f, indent=4, sort_keys=True)
