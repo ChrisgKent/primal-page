@@ -24,7 +24,7 @@ def cli():
     args = parser.parse_args()
 
     if not args.outdir.is_dir():
-        raise sys.exit(f"{args.output} not a directory")
+        raise sys.exit(f"{args.output} not a directory")  # type: ignore
 
     return args
 
