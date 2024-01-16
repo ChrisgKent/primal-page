@@ -2,7 +2,7 @@ import pathlib
 import json
 import sys
 import hashlib
-from primal_page.schemas import PrimerClass
+from primal_page.schemas import PrimerClass, determine_bedfile_version, BedfileVersion
 
 
 def hashfile(fname):
@@ -18,7 +18,7 @@ def create_rawlink(repo, scheme_name, length, version, file, pclass) -> str:
 
 
 def parse_version(
-    version_path, repo_url, scheme_name, length, version, pclass
+    version_path: pathlib.Path, repo_url, scheme_name, length, version, pclass
 ) -> dict[str, str]:
     version_dict = dict()
 
@@ -167,7 +167,11 @@ def check_consistency(existing_json, new_json):
 
 
 def create_index(
-    server_url, repo_url, parent_dir=pathlib.Path("."), git_commit: str | None = None
+    server_url,
+    repo_url,
+    parent_dir=pathlib.Path("."),
+    git_commit: str | None = None,
+    force: bool = False,
 ):
     """
     Create an index JSON file for the given server and repository URLs.
@@ -176,6 +180,8 @@ def create_index(
         server_url (str): The URL of the server.
         repo_url (str): The URL of the repository.
         parent_dir (str, optional): The parent directory path containing the primerscheme dir. index.json will be writem to parent_dir/index.json Defaults to ".".
+        git_commit (str, optional): The git commit hash. Defaults to None.
+        force (bool, optional): Force the creation of the index.json file. Allowing the change of hashes
 
     Returns:
         bool: True if the index JSON file is created successfully, False otherwise.
@@ -199,17 +205,20 @@ def create_index(
             scheme_name = path.name
             pclass_dict[scheme_name] = parse_scheme(path, repo_url, scheme_name, pclass)
 
+            print(f"parsed {pclass}/{scheme_name}")
+
         # Add the pclass to the json_dict
         json_dict[pclass] = pclass_dict
 
-    # Read in the existing index.json file
-    with open("index.json") as f:
-        existing_json_dict: dict = json.load(f)
-        # Remove the github commit sha
-        _old_commit = existing_json_dict.pop("github-commit-sha", None)
+    if not force:
+        # Read in the existing index.json file
+        with open(parent_dir / "index.json") as f:
+            existing_json_dict: dict = json.load(f)
+            # Remove the github commit sha
+            _old_commit = existing_json_dict.pop("github-commit-sha", None)
 
-    # Check persistence of existing key files
-    check_consistency(existing_json_dict, json_dict)
+        # Check persistence of existing key files
+        check_consistency(existing_json_dict, json_dict)
 
     # Update the github commit
     if git_commit is not None:
@@ -217,7 +226,7 @@ def create_index(
             "github-commit-sha"
         ] = git_commit  # This is added so that the index.json changes when the github commit changes
 
-    with open("index.json", "w") as f:
+    with open(parent_dir / "index.json", "w") as f:
         json.dump(json_dict, f, indent=4, sort_keys=True)
 
     return True
