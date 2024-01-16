@@ -3,13 +3,53 @@ from pydantic.functional_validators import AfterValidator
 from typing import Annotated
 import re
 from enum import Enum
+import pathlib
+from primalhelper.bedfile import read_bed_file
 
 SCHEMENAME_PATTERN = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"
 
 # Primername versions
 V2_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)_[0-9]+$"
-V1_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)(_ALT|_alt)*$"
+V1_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)(_ALT[0-9]*|_alt[0-9]*)*$"
+
+
+# bedfile versions
+class BedfileVersion(Enum):
+    """
+    V1 bedfiles use a 6 col system
+    V2 bedfiles use a 7 col system and V1 primernames
+    V3 bedfiles use a 7 col system and V2 primernames
+    """
+
+    V1 = "v1.0"
+    V2 = "v2.0"
+    V3 = "v3.0"
+    INVALID = "invalid"  # Not applicable
+
+
+def determine_bedfile_version(bedfile: pathlib.Path) -> BedfileVersion:
+    """
+    Determine the bedfile version
+    :param bedfile: The bedfile to check
+    :return: The bedfile version
+    """
+    bedlines, _headers = read_bed_file(bedfile)
+    # If 6 cols then v1
+    if len(bedlines[0]) == 6:
+        return BedfileVersion.V1
+
+    # If 7 cols then v2 or v3
+    # Check from primername
+    primernames = [x[3] for x in bedlines]
+    primer_name_versions = {determine_primername_version(x) for x in primernames}
+    if primer_name_versions == {PrimerNameVersion.V1}:
+        return BedfileVersion.V2
+    elif primer_name_versions == {PrimerNameVersion.V2}:
+        return BedfileVersion.V3
+    # Invalid if we get here
+    # Mix of v1, v2 or invalid
+    return BedfileVersion.INVALID
 
 
 class PrimerNameVersion(Enum):
@@ -101,7 +141,8 @@ class Info(BaseModel):
     species: Annotated[set[int | str], AfterValidator(not_empty)]
     license: str = "CC BY-SA 4.0"
     primerclass: PrimerClass = PrimerClass.PRIMERSCHEMES
-    infoschema: str = "v1.1.0"
+    infoschema: str = "v1.2.0"
+    articbedversion: BedfileVersion
     # Add the optional fields
     description: str | None = None
     derivedfrom: str | None = None
@@ -119,6 +160,7 @@ if __name__ == "__main__":
         authors=set("artic"),
         algorithmversion="test",
         species=set("sars-cov-2"),
+        articbedversion=BedfileVersion.V3,
     )
 
     # indexv = IndexVersion(

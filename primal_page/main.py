@@ -12,6 +12,8 @@ from primal_page.schemas import (
     SchemeStatus,
     Info,
     determine_primername_version,
+    determine_bedfile_version,
+    BedfileVersion,
     PrimerNameVersion,
 )
 
@@ -33,7 +35,30 @@ This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 Inter
 ![](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)"""
 
 
-def regenerate_readme(path: pathlib.Path, info: Info, pngs):
+def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
+    """
+    Trim whitespace from the ends of a file.
+        - Reads file into memory. Not suitable for large files
+    """
+    with open(in_path, "r") as infile:
+        input_file = infile.read().strip()
+
+    with open(out_path, "w") as outfile:
+        outfile.write(input_file)
+
+
+def regenerate_readme(path: pathlib.Path, info: Info, pngs: list[pathlib.Path]):
+    """
+    Regenerate the README.md file for a scheme
+
+    :param path: The path to the scheme directory
+    :type path: pathlib.Path
+    :param info: The scheme information
+    :type info: Info
+    :param pngs: The list of PNG files
+    :type pngs: list[pathlib.Path]
+    """
+
     with open(path / "README.md", "w") as readme:
         readme.write(
             f"# {info.schemename} {info.ampliconsize}bp {info.schemeversion}\n\n"
@@ -274,6 +299,13 @@ def create(
     # Check for a single primer.bed file
     valid_primer_bed = find_primerbed(primerbed, found_files, schemepath)
 
+    # Get primerbed version
+    primerbed_version: BedfileVersion = determine_bedfile_version(valid_primer_bed)
+    if primerbed_version == BedfileVersion.INVALID:
+        raise ValueError(
+            f"Could not determine primerbed version for {valid_primer_bed}"
+        )
+
     # Find the reference.fasta file
     valid_ref = find_ref(reference, found_files, schemepath)
 
@@ -292,6 +324,10 @@ def create(
 
     # Remove some paths from the config
     config_json.pop("output_dir", None)
+    # These hashes are no longer used, so remove to prevent confusion
+    md5s_keys_to_remove = {k for k in config_json.keys() if k.endswith("md5")}
+    for k in md5s_keys_to_remove:
+        config_json.pop(k)
 
     # Multiple pngs/htmls/msas are allowed
     # The single check is mainly to prevent multiple schemes via providing the wrong directory
@@ -330,8 +366,8 @@ def create(
         ampliconsize=ampliconsize,
         schemeversion=schemeversion,
         schemename=schemename,
-        primer_bed_md5=hashfile(valid_primer_bed),
-        reference_fasta_md5=hashfile(valid_ref),
+        primer_bed_md5="NONE",  # Will be updated later
+        reference_fasta_md5="NONE",  # Will be updated later
         status=schemestatus,
         citations=set(citations),
         authors=set(authors),
@@ -340,6 +376,7 @@ def create(
         description=description,
         derivedfrom=derivedfrom,
         primerclass=primerclass,
+        articbedversion=primerbed_version,
     )
 
     #####################################
@@ -356,9 +393,13 @@ def create(
     # If this fails it will deleted the half completed scheme
     # Need to check the repo doesnt already exist
     try:
-        # Copy files
-        shutil.copy(valid_primer_bed, repo_dir / "primer.bed")
-        shutil.copy(valid_ref, repo_dir / "reference.fasta")
+        # Copy files and trim whitespace
+        trim_file_whitespace(valid_primer_bed, repo_dir / "primer.bed")
+        trim_file_whitespace(valid_ref, repo_dir / "reference.fasta")
+
+        # Update the hashes in the info.json
+        info.primer_bed_md5 = hashfile(repo_dir / "primer.bed")
+        info.reference_fasta_md5 = hashfile(repo_dir / "reference.fasta")
 
         working_dir = repo_dir / "work"
         working_dir.mkdir()
@@ -578,10 +619,13 @@ def build_index(
     git_commit_sha: Annotated[
         Optional[str], typer.Option(help="The git commit")
     ] = None,
+    force: Annotated[
+        bool, typer.Option(help="Force the creation of the index.json")
+    ] = False,
 ):
     """Build an index.json file from all schemes in the directory"""
 
-    create_index(gitserver, gitaccount, parentdir, git_commit_sha)
+    create_index(gitserver, gitaccount, parentdir, git_commit_sha, force)
 
 
 @app.command()
@@ -608,6 +652,67 @@ def remove(
     scheme_dir = size_dir.parent
     if len(list(scheme_dir.iterdir())) == 0:
         scheme_dir.rmdir()
+
+
+@app.command()
+def regenerate(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+):
+    """
+    Regenerate the info.json and README.md file for a scheme
+        - Rehashes info.json's primer_bed_md5 and reference_fasta_md5
+        - Regenerates the README.md file
+        - Recalculate the artic-primerbed version
+
+    Ensures work/config.json has no absolute paths
+        - Ensures hashes in config.json are removed
+    """
+    # Check that this is an info.json file (for safety)
+    if schemeinfo.name != "info.json":
+        raise ValueError(f"{schemeinfo} is not an info.json file")
+
+    # Get the scheme path
+    scheme_path = schemeinfo.parent
+
+    # Get the info
+    info_json = json.load(schemeinfo.open())
+
+    # Trim whitespace from primer.bed and reference.fasta
+    trim_file_whitespace(scheme_path / "primer.bed", scheme_path / "primer.bed")
+    trim_file_whitespace(
+        scheme_path / "reference.fasta", scheme_path / "reference.fasta"
+    )
+
+    # if articbedversion not set then set it
+    articbedversion = determine_bedfile_version(scheme_path / "primer.bed")
+    if articbedversion == BedfileVersion.INVALID:
+        raise ValueError(
+            f"Could not determine artic-primerbed version for {scheme_path / 'primer.bed'}"
+        )
+    info_json["articbedversion"] = articbedversion.value
+
+    # Regenerate the files hashes
+    info_json["primer_bed_md5"] = hashfile(scheme_path / "primer.bed")
+    info_json["reference_fasta_md5"] = hashfile(scheme_path / "reference.fasta")
+
+    info = Info(**info_json)
+
+    # Get the pngs
+    pngs = [path for path in scheme_path.rglob("*.png")]
+
+    #####################################
+    # Final validation and create files #
+    #####################################
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Regenerate the readme
+    regenerate_readme(scheme_path, info, pngs)
 
 
 if __name__ == "__main__":

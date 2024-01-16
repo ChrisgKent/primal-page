@@ -16,7 +16,7 @@ class TestCreate(unittest.TestCase):
         # Required params
         self.ampliconsize = 400
         self.schemeversion = "v1.0.0"
-        self.species = ["sars-cov-2"]
+        self.species = [10]
         self.schemestatus = SchemeStatus.DRAFT
         self.citations = ["test-citation:124"]
         self.authors = ["artic"]
