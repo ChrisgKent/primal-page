@@ -37,6 +37,7 @@ def parse_version(
     version_dict["schemename"] = info_dict["schemename"]
     version_dict["schemeversion"] = info_dict["schemeversion"]
     version_dict["ampliconsize"] = info_dict["ampliconsize"]
+    version_dict["articbedversion"] = info_dict["articbedversion"]
 
     # Add the primer.bed file
     primerbed = version_path / "primer.bed"
