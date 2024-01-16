@@ -220,19 +220,22 @@ class TestDeterminePrimerBedVersion(unittest.TestCase):
     v3bedfile = pathlib.Path("tests/test_input/v3.primer.bed")
     invalidbedfile = pathlib.Path("tests/test_input/invalid.primer.bed")
 
-    def test_parse_bedfiles(self):
+    def test_parse_v1_bedfile(self):
         """
         See if the correct bedfile version is returned
         """
         # Test v1
         self.assertEqual(determine_bedfile_version(self.v1bedfile), BedfileVersion.V1)
 
+    def test_parse_v2_bedfile(self):
         # Test v2
         self.assertEqual(determine_bedfile_version(self.v2bedfile), BedfileVersion.V2)
 
+    def test_parse_v3_bedfile(self):
         # Test v3
         self.assertEqual(determine_bedfile_version(self.v3bedfile), BedfileVersion.V3)
 
+    def test_parse_invalid_bedfile(self):
         # Test invalid
         self.assertEqual(
             determine_bedfile_version(self.invalidbedfile), BedfileVersion.INVALID
