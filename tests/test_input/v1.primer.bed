@@ -1,8 +1,7 @@
-NiV|AJ564622|NV/MY/99/VRI-1413|pig|Malaysia|||1999	1	27	NiV_6_Malaysia_1_LEFT	1	+
-NiV|AJ564622|NV/MY/99/VRI-1413|pig|Malaysia|||1999	378	401	NiV_6_Malaysia_1_RIGHT	1	-
-NiV|AJ564622|NV/MY/99/VRI-1413|pig|Malaysia|||1999	319	341	NiV_6_Malaysia_2_LEFT	2	+
-NiV|AJ564622|NV/MY/99/VRI-1413|pig|Malaysia|||1999	702	726	NiV_6_Malaysia_2_RIGHT	2	-
-NiV|AJ564622|NV/MY/99/VRI-1413|pig|Malaysia|||1999	640	662	NiV_6_Malaysia_3_LEFT	1	+
-NiV|AJ564622|NV/MY/99/VRI-1413|pig|Malaysia|||1999	1004	1028	NiV_6_Malaysia_3_RIGHT	1	-
-NiV|AJ564622|NV/MY/99/VRI-1413|pig|Malaysia|||1999	943	965	NiV_6_Malaysia_4_LEFT	2	+
-NiV|AJ564622|NV/MY/99/VRI-1413|pig|Malaysia|||1999	1308	1330	NiV_6_Malaysia_4_RIGHT	2	-
+NiV	378	401	NiV-6-Malaysia_1_RIGHT	1	-
+NiV	319	341	NiV-6-Malaysia_2_LEFT	2	+
+NiV	702	726	NiV-6-Malaysia_2_RIGHT	2	-
+NiV	640	662	NiV-6-Malaysia_3_LEFT	1	+
+NiV	1004	1028	NiV-6-Malaysia_3_RIGHT	1	-
+NiV	943	965	NiV-6-Malaysia_4_LEFT	2	+
+NiV	1308	1330	NiV-6-Malaysia_4_RIGHT	2	-
