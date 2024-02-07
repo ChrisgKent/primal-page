@@ -13,6 +13,43 @@ VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"
 V2_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)_[0-9]+$"
 V1_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)(_ALT[0-9]*|_alt[0-9]*)*$"
 
+# Bedfile versions
+## This doesn't parse the contents just the structure
+BEDFILE_LINE = r"^\S+\t\d+\t\d+\t\S+\t\d+\t(\+|\-)\t[a-zA-Z]+$"
+
+
+class BEDFILERESULT(Enum):
+    VALID = 0
+    INVALID_VERSION = 1
+    INVALID_STRUCTURE = 2
+
+
+def validate_bedfile_line_structure(line: str) -> bool:
+    line = line.strip()
+    if line.startswith("#"):
+        return True
+    return re.search(BEDFILE_LINE, line) is not None
+
+
+def validate_bedfile(bedfile: pathlib.Path) -> BEDFILERESULT:
+    # Read in the bedfile string
+    bedfile_str = bedfile.read_text()
+
+    # Split the bedfile into lines
+    bedlines = bedfile_str.split("\n")
+
+    # Check each line
+    for line in bedlines:
+        if not validate_bedfile_line_structure(line):
+            return BEDFILERESULT.INVALID_STRUCTURE
+
+    # Check the bedfile names.
+    match determine_bedfile_version(bedfile):
+        case BedfileVersion.INVALID:
+            return BEDFILERESULT.INVALID_VERSION
+        case _:
+            return BEDFILERESULT.VALID
+
 
 # bedfile versions
 class BedfileVersion(Enum):
