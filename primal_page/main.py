@@ -12,10 +12,10 @@ from primal_page.schemas import (
     PrimerClass,
     SchemeStatus,
     Info,
-    determine_primername_version,
     determine_bedfile_version,
     BedfileVersion,
-    PrimerNameVersion,
+    validate_bedfile,
+    BEDFILERESULT,
 )
 
 
@@ -95,36 +95,6 @@ def hashfile(fname: pathlib.Path) -> str:
     return hash_md5.hexdigest()
 
 
-def validate_primer_bed(primer_bed: pathlib.Path, fix: bool = False) -> bool:
-    """Validate a primer bed file"""
-    with open(primer_bed, "r") as f:
-        for lineindex, line in enumerate(f.readlines()):
-            data = line.strip().split("\t")
-
-            # Check for 7 columns
-            if len(data) != 7:
-                raise ValueError(
-                    f"Line {lineindex} in {primer_bed} does not have 7 columns"
-                )
-
-            # Check for valid primername
-            raw_primername = data[3].strip()
-
-            match determine_primername_version(raw_primername):
-                case PrimerNameVersion.V1:
-                    # Valid name
-                    pass
-                case PrimerNameVersion.V2:
-                    # Valid version 2 name
-                    pass
-                case PrimerNameVersion.INVALID:
-                    raise ValueError(
-                        f"Line {lineindex} in {primer_bed} does not have a valid primername '{raw_primername}'"
-                    )
-
-    return True
-
-
 def find_ref(
     cli_reference: pathlib.Path | None,
     found_files: list[pathlib.Path],
@@ -185,7 +155,6 @@ def find_primerbed(
                 f"Could not find a SINGLE *.primer.bed file in {schemepath} or its subdirectories, found {len(primer_bed_list)}. Please specify manually with --primerbed"
             )
     elif cli_primerbed.exists():
-        # TODO validate the primer.bed file
         return cli_primerbed
     else:
         raise FileNotFoundError(f"Could not find file at {cli_primerbed}")
@@ -304,23 +273,28 @@ def create(
     # Check for a single primer.bed file
     valid_primer_bed = find_primerbed(primerbed, found_files, schemepath)
 
+    match validate_bedfile(valid_primer_bed):
+        case BEDFILERESULT.VALID:
+            pass
+        case BEDFILERESULT.INVALID_VERSION:
+            raise ValueError(
+                f"Could not determine primerbed version for {valid_primer_bed}"
+            )
+        case BEDFILERESULT.INVALID_STRUCTURE:
+            raise ValueError(
+                f"Invalid primerbed structure for {valid_primer_bed}. Please ensure it is a valid 7 column bedfile"
+            )
     # Get primerbed version
     primerbed_version: BedfileVersion = determine_bedfile_version(valid_primer_bed)
-    if primerbed_version == BedfileVersion.INVALID:
-        raise ValueError(
-            f"Could not determine primerbed version for {valid_primer_bed}"
-        )
 
     # Find the reference.fasta file
     valid_ref = find_ref(reference, found_files, schemepath)
 
     # Search for config.json
-    result = find_config(configpath, found_files, schemepath)
+    status, conf_path = find_config(configpath, found_files, schemepath)
     config_json: None | dict = None  # type: ignore
-    if (
-        result[0] == FindResult.FOUND and result[1] is not None
-    ):  # Second check is for mypy
-        configpath = result[1]
+    if status == FindResult.FOUND and conf_path is not None:  # Second check is for mypy
+        configpath = conf_path
         # Read in the config
         config_json: dict = json.load(configpath.open())
         # Remove some paths from the config
@@ -338,7 +312,7 @@ def create(
                     f"algorithmversion not specified in {configpath}. Please specify manually with --algorithmversion"
                 )
 
-    elif result[0] == FindResult.NOT_FOUND:
+    elif status == FindResult.NOT_FOUND:
         if algorithmversion is None:
             raise FileNotFoundError(
                 f"Could not find a config.json file in {schemepath}. Please specify manually with --configpath or specify algorithmversion with --algorithmversion"
