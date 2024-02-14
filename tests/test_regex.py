@@ -15,6 +15,7 @@ from primal_page.schemas import (
     not_empty,
     determine_bedfile_version,
     BedfileVersion,
+    validate_bedfile_line_structure,
 )
 
 
@@ -240,6 +241,49 @@ class TestDeterminePrimerBedVersion(unittest.TestCase):
         self.assertEqual(
             determine_bedfile_version(self.invalidbedfile), BedfileVersion.INVALID
         )
+
+
+class TestValidateBedfileLineStructure(unittest.TestCase):
+    v1bedfile = pathlib.Path("tests/test_input/v1.primer.bed")
+    v2bedfile = pathlib.Path("tests/test_input/v2.primer.bed")
+    v3bedfile = pathlib.Path("tests/test_input/v3.primer.bed")
+    invalidbedfile = pathlib.Path("tests/test_input/invalid.struct.primer.bed")
+
+    def test_bed_file_structure_v3(self):
+        """
+        Test that the bed file structure is correct
+        """
+        with open(self.v3bedfile, "r") as bedfile:
+            for line in bedfile.readlines():
+                self.assertTrue(validate_bedfile_line_structure(line))
+
+    def test_bed_file_structure_v2(self):
+        """
+        Test that the bed file structure is correct
+        """
+        with open(self.v2bedfile, "r") as bedfile:
+            for line in bedfile.readlines():
+                self.assertTrue(validate_bedfile_line_structure(line))
+
+    def test_bed_file_structure_v1(self):
+        """
+        V1 Bedfiles are not supported in this index
+        """
+        with open(self.v1bedfile, "r") as bedfile:
+            results = [
+                validate_bedfile_line_structure(line) for line in bedfile.readlines()
+            ]
+            self.assertFalse(all(results))
+
+    def test_bed_file_structure_invalid(self):
+        """
+        Test that the bed file structure is correct
+        """
+        with open(self.invalidbedfile, "r") as bedfile:
+            results = [
+                validate_bedfile_line_structure(line) for line in bedfile.readlines()
+            ]
+            self.assertFalse(all(results))
 
 
 if __name__ == "__main__":

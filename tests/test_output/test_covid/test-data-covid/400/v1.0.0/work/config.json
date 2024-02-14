@@ -1,6 +1,5 @@
 {
     "algorithmversion": "primalscheme3:1.0.0",
-    "amplicon.bed.md5": "26b4cf3771692ed155eb3885e5eb5877",
     "amplicon_size_max": 1100,
     "amplicon_size_min": 900,
     "backtrack": false,
@@ -33,7 +32,6 @@
     "n_cores": 10,
     "npools": 2,
     "plot": true,
-    "primer.bed.md5": "d28203c3ba5fe529008f0f3b7e030441",
     "primer_gc_max": 55,
     "primer_gc_min": 30,
     "primer_hairpin_th_max": 47.0,
@@ -44,6 +42,5 @@
     "primer_tm_min": 59.5,
     "primer_walk_max": 50,
     "primerclass": "primerschemes",
-    "reducekmers": false,
-    "reference.fasta.md5": "d11d06b5d1eb1d85c69e341c3c026e08"
+    "reducekmers": false
 }

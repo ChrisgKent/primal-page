@@ -5,17 +5,23 @@ import shutil
 import hashlib
 import json
 from typing import Optional
+from enum import Enum
 
 from primal_page.build_index import create_index
 from primal_page.schemas import (
     PrimerClass,
     SchemeStatus,
     Info,
-    determine_primername_version,
     determine_bedfile_version,
     BedfileVersion,
-    PrimerNameVersion,
+    validate_bedfile,
+    BEDFILERESULT,
 )
+
+
+class FindResult(Enum):
+    NOT_FOUND = 1
+    FOUND = 2
 
 
 # Create the typer app
@@ -89,36 +95,6 @@ def hashfile(fname: pathlib.Path) -> str:
     return hash_md5.hexdigest()
 
 
-def validate_primer_bed(primer_bed: pathlib.Path, fix: bool = False) -> bool:
-    """Validate a primer bed file"""
-    with open(primer_bed, "r") as f:
-        for lineindex, line in enumerate(f.readlines()):
-            data = line.strip().split("\t")
-
-            # Check for 7 columns
-            if len(data) != 7:
-                raise ValueError(
-                    f"Line {lineindex} in {primer_bed} does not have 7 columns"
-                )
-
-            # Check for valid primername
-            raw_primername = data[3].strip()
-
-            match determine_primername_version(raw_primername):
-                case PrimerNameVersion.V1:
-                    # Valid name
-                    pass
-                case PrimerNameVersion.V2:
-                    # Valid version 2 name
-                    pass
-                case PrimerNameVersion.INVALID:
-                    raise ValueError(
-                        f"Line {lineindex} in {primer_bed} does not have a valid primername '{raw_primername}'"
-                    )
-
-    return True
-
-
 def find_ref(
     cli_reference: pathlib.Path | None,
     found_files: list[pathlib.Path],
@@ -179,7 +155,6 @@ def find_primerbed(
                 f"Could not find a SINGLE *.primer.bed file in {schemepath} or its subdirectories, found {len(primer_bed_list)}. Please specify manually with --primerbed"
             )
     elif cli_primerbed.exists():
-        # TODO validate the primer.bed file
         return cli_primerbed
     else:
         raise FileNotFoundError(f"Could not find file at {cli_primerbed}")
@@ -189,14 +164,13 @@ def find_config(
     cli_config: pathlib.Path | None,
     found_files: list[pathlib.Path],
     schemepath: pathlib.Path,
-) -> pathlib.Path:
+) -> tuple[FindResult, pathlib.Path | None]:
     """
     Find the config.json file
     :param cli_config: The config.json file specified by the user. None if not specified
     :param found_files: A list of all files found in the scheme directory
     :param schemepath: The path to the scheme directory
     :return: The path to the config.json file
-    :raises FileNotFoundError: If the config.json file cannot be found
     """
     # Search for config.json
     if cli_config is None:  # No config.json specified
@@ -204,17 +178,17 @@ def find_config(
         config_list: list[pathlib.Path] = [
             path for path in found_files if path.name == ("config.json")
         ]
-        if len(config_list) == 1:
-            return config_list[0]
-        else:
-            raise FileNotFoundError(
-                f"Could not find a SINGLE config.json file in {schemepath} or its subdirectories, found {len(config_list)}. Please specify manually with --config"
-            )
+        match len(config_list):
+            case 1:
+                return (FindResult.FOUND, config_list[0])
+            case _:
+                return (FindResult.NOT_FOUND, None)
+
     elif cli_config.exists():
         # TODO validate the config.json file
-        return cli_config
+        return (FindResult.FOUND, cli_config)
     else:
-        raise FileNotFoundError(f"Could not find file at {cli_config}")
+        return (FindResult.NOT_FOUND, None)
 
 
 @app.command()
@@ -299,35 +273,50 @@ def create(
     # Check for a single primer.bed file
     valid_primer_bed = find_primerbed(primerbed, found_files, schemepath)
 
+    match validate_bedfile(valid_primer_bed):
+        case BEDFILERESULT.VALID:
+            pass
+        case BEDFILERESULT.INVALID_VERSION:
+            raise ValueError(
+                f"Could not determine primerbed version for {valid_primer_bed}"
+            )
+        case BEDFILERESULT.INVALID_STRUCTURE:
+            raise ValueError(
+                f"Invalid primerbed structure for {valid_primer_bed}. Please ensure it is a valid 7 column bedfile"
+            )
     # Get primerbed version
     primerbed_version: BedfileVersion = determine_bedfile_version(valid_primer_bed)
-    if primerbed_version == BedfileVersion.INVALID:
-        raise ValueError(
-            f"Could not determine primerbed version for {valid_primer_bed}"
-        )
 
     # Find the reference.fasta file
     valid_ref = find_ref(reference, found_files, schemepath)
 
     # Search for config.json
-    configpath = find_config(configpath, found_files, schemepath)
-    # Read in the config
-    config_json: dict = json.load(configpath.open())
-    # parse the config.json to get algorithm
-    if algorithmversion is None:
-        if "algorithmversion" in config_json.keys():
-            algorithmversion = str(config_json["algorithmversion"])
-        else:
-            raise ValueError(
-                f"Could not find algorithmversion in config.json, please specify manually with --algorithmversion, in form of 'algorithm':'version'"
-            )
+    status, conf_path = find_config(configpath, found_files, schemepath)
+    config_json: None | dict = None  # type: ignore
+    if status == FindResult.FOUND and conf_path is not None:  # Second check is for mypy
+        configpath = conf_path
+        # Read in the config
+        config_json: dict = json.load(configpath.open())
+        # Remove some paths from the config
+        config_json.pop("output_dir", None)
+        # These hashes are no longer used, so remove to prevent confusion
+        md5s_keys_to_remove = {k for k in config_json.keys() if k.endswith("md5")}
+        for k in md5s_keys_to_remove:
+            config_json.pop(k)
 
-    # Remove some paths from the config
-    config_json.pop("output_dir", None)
-    # These hashes are no longer used, so remove to prevent confusion
-    md5s_keys_to_remove = {k for k in config_json.keys() if k.endswith("md5")}
-    for k in md5s_keys_to_remove:
-        config_json.pop(k)
+        if algorithmversion is None:
+            if "algorithmversion" in config_json.keys():
+                algorithmversion = str(config_json["algorithmversion"])
+            else:
+                raise ValueError(
+                    f"algorithmversion not specified in {configpath}. Please specify manually with --algorithmversion"
+                )
+
+    elif status == FindResult.NOT_FOUND:
+        if algorithmversion is None:
+            raise FileNotFoundError(
+                f"Could not find a config.json file in {schemepath}. Please specify manually with --configpath or specify algorithmversion with --algorithmversion"
+            )
 
     # Multiple pngs/htmls/msas are allowed
     # The single check is mainly to prevent multiple schemes via providing the wrong directory
@@ -371,7 +360,7 @@ def create(
         status=schemestatus,
         citations=set(citations),
         authors=set(authors),
-        algorithmversion=algorithmversion,
+        algorithmversion=algorithmversion,  # type: ignore
         species=set(species),
         description=description,
         derivedfrom=derivedfrom,
@@ -404,9 +393,10 @@ def create(
         working_dir = repo_dir / "work"
         working_dir.mkdir()
 
-        # Write out the config.json
-        with open(working_dir / "config.json", "w") as configfile:
-            json.dump(config_json, configfile, indent=4, sort_keys=True)
+        if config_json is not None:
+            # Write out the config.json
+            with open(working_dir / "config.json", "w") as configfile:
+                json.dump(config_json, configfile, indent=4, sort_keys=True)
 
         # Copy over misc files
         for misc_file in misc_files_to_copy:

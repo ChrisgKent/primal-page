@@ -12,7 +12,7 @@
     "schemeversion": "v1.0.0",
     "schemename": "test-data-covid",
     "primer_bed_md5": "d28203c3ba5fe529008f0f3b7e030441",
-    "reference_fasta_md5": "d11d06b5d1eb1d85c69e341c3c026e08",
+    "reference_fasta_md5": "4aa87e822c7ede44efd4988ce0d00c88",
     "status": "draft",
     "citations": [
         "test-citation:124"

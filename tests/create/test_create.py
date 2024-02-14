@@ -3,7 +3,7 @@ import pathlib
 import shutil
 import json
 
-from primal_page.main import create, find_config, find_primerbed, find_ref
+from primal_page.main import create, find_config, find_primerbed, find_ref, FindResult
 from primal_page.schemas import SchemeStatus
 
 
@@ -190,41 +190,33 @@ class Test_Find(unittest.TestCase):
         """
         Test the find_config function can find a single config file
         """
-        result = find_config(
+        result, path = find_config(
             cli_config=None,
             found_files=self.found_files,
             schemepath=self.schemepath,
         )
         # See if it can find the config file
-        self.assertEqual(
-            result, pathlib.Path("tests/test_input/test_covid/config.json")
-        )
+        self.assertEqual(path, pathlib.Path("tests/test_input/test_covid/config.json"))
 
         # See if it can find the given config file
-        resultcli = find_config(
+        result, path = find_config(
             cli_config=pathlib.Path(
                 "tests/test_input/test_covid/config.json"
             ),  # Provide a different file # Might fail in future when ref is validated
             found_files=self.found_files,
             schemepath=self.schemepath,
         )
-        self.assertEqual(
-            resultcli, pathlib.Path("tests/test_input/test_covid/config.json")
-        )
+        self.assertEqual(path, pathlib.Path("tests/test_input/test_covid/config.json"))
 
         # Test fail when given a file with two refs
-        with self.assertRaises(FileNotFoundError):
-            new_schemepath = pathlib.Path("tests/test_input")
-            new_found_files = [x for x in new_schemepath.rglob("*")]
-            find_config(None, new_found_files, new_schemepath)
+        new_schemepath = pathlib.Path("tests/test_input")
+        new_found_files = [x for x in new_schemepath.rglob("*")]
+        result, path = find_config(None, new_found_files, new_schemepath)
+        self.assertEqual(result, FindResult.NOT_FOUND)
 
         # Test fail when given a file that doesn't exist
-        with self.assertRaises(FileNotFoundError):
-            find_config(
-                cli_config=pathlib.Path("tests/test_input/test_covid/missing.json"),
-                found_files=self.found_files,
-                schemepath=self.schemepath,
-            )
+        result, path = find_config(None, new_found_files, new_schemepath)
+        self.assertEqual(result, FindResult.NOT_FOUND)
 
 
 if __name__ == "__main__":
