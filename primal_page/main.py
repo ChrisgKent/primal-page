@@ -16,6 +16,7 @@ from primal_page.schemas import (
     BedfileVersion,
     validate_bedfile,
     BEDFILERESULT,
+    Collection,
 )
 
 
@@ -264,6 +265,9 @@ def create(
     primerclass: Annotated[
         PrimerClass, typer.Option(help="The primer class")
     ] = PrimerClass.PRIMERSCHEMES.value,  # type: ignore
+    collection: Annotated[
+        Optional[list[Collection]], typer.Option(help="The collection")
+    ] = None,
 ):
     """Create a new scheme in the required format"""
 
@@ -349,6 +353,9 @@ def create(
         and x.is_file()
     ]
 
+    # Create the collections set
+    collections = {x for x in collection} if collection is not None else set()
+
     # Create the info.json
     # Generate the md5s
     info = Info(
@@ -366,6 +373,7 @@ def create(
         derivedfrom=derivedfrom,
         primerclass=primerclass,
         articbedversion=primerbed_version,
+        collections=collections,
     )
 
     #####################################
@@ -425,7 +433,7 @@ def create(
 
 
 @modify_app.command()
-def change_status(
+def status(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(help="The path to info.json", readable=True, exists=True),
@@ -458,7 +466,7 @@ def change_status(
 
 
 @modify_app.command()
-def change_primerclass(
+def primerclass(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(help="The path to info.json", readable=True, exists=True),
@@ -582,6 +590,155 @@ def remove_citation(
     if citation not in info.citations:
         raise ValueError(f"{citation} is not in the citation list")
     info.citations.remove(citation)
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def remove_collection(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    collection: Annotated[Collection, typer.Argument(help="The Collection to remove")],
+):
+    """Remove an Collection from the Collection list in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Check if collection is already not in the list
+    if collection not in info.collections:
+        raise ValueError(f"{collection} is already not in the collection list")
+    info.collections.remove(collection)
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def add_collection(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    collection: Annotated[Collection, typer.Argument(help="The Collection to add")],
+):
+    """Add a Collection to the Collection list in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Check if author is already not in the list
+    if collection in info.collections:
+        raise ValueError(f"{collection} is already in the collection list")
+    info.collections.add(collection)
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def description(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    description: Annotated[
+        str,
+        typer.Argument(
+            help="The new description. Use 'None' to remove the description"
+        ),
+    ],
+):
+    """Replaces the description in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Add the description
+    if description == "None":
+        info.description = None
+    else:
+        info.description = description.strip()
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def derivedfrom(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    derivedfrom: Annotated[
+        str,
+        typer.Argument(
+            help="The new derivedfrom. Use 'None' to remove the derivedfrom"
+        ),
+    ],
+):
+    """Replaces the derivedfrom in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Add the derivedfrom
+    if derivedfrom == "None":
+        info.derivedfrom = None
+    else:
+        info.derivedfrom = derivedfrom.strip()
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def license(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    license: Annotated[
+        str,
+        typer.Argument(
+            help="The new license. Use 'None' show the work is not licensed (Not recommended)"
+        ),
+    ],
+):
+    """Replaces the license in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    info.license = license.strip()
 
     # Write the validated info.json
     with open(schemeinfo, "w") as infofile:
