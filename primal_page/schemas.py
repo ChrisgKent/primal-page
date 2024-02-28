@@ -165,6 +165,21 @@ def not_empty(x: list | set) -> list | set:
     return x
 
 
+class Collection(Enum):
+    # Authors
+    ARTIC = "ARTIC"
+    MODJADJI = "MODJADJI"
+    QUICK_LAB = "QUICK-LAB"
+    COMMUNITY = "COMMUNITY"
+    # Uses
+    WASTE_WATER = "WASTE-WATER"
+    CLINAL_ISOLATES = "CLINAL-ISOLATES"
+    # Coverage types
+    WHOLE_GENOME = "WHOLE-GENOME"
+    PANEL = "PANEL"
+    MULTI_TARGET = "MULTI-TARGET"
+
+
 class Info(BaseModel):
     ampliconsize: PositiveInt
     schemeversion: Annotated[str, AfterValidator(validate_schemeversion)]
@@ -178,11 +193,12 @@ class Info(BaseModel):
     species: Annotated[set[int | str], AfterValidator(not_empty)]
     license: str = "CC BY-SA 4.0"
     primerclass: PrimerClass = PrimerClass.PRIMERSCHEMES
-    infoschema: str = "v1.2.0"
+    infoschema: str = "v1.3.0"
     articbedversion: BedfileVersion
     # Add the optional fields
     description: str | None = None
     derivedfrom: str | None = None
+    collections: set[Collection] = set()
 
 
 if __name__ == "__main__":
@@ -198,6 +214,7 @@ if __name__ == "__main__":
         algorithmversion="test",
         species=set("sars-cov-2"),
         articbedversion=BedfileVersion.V3,
+        collections=set(),
     )
 
     # indexv = IndexVersion(
