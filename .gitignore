@@ -1,3 +1,4 @@
 primerschemes/
 index.json
-*/__pycache__/
+**/__pycache__/
+dist/ 

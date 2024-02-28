@@ -6,6 +6,7 @@ import hashlib
 import json
 from typing import Optional
 from enum import Enum
+import requests
 
 from primal_page.build_index import create_index
 from primal_page.schemas import (
@@ -16,6 +17,7 @@ from primal_page.schemas import (
     BedfileVersion,
     validate_bedfile,
     BEDFILERESULT,
+    Collection,
 )
 
 
@@ -264,6 +266,9 @@ def create(
     primerclass: Annotated[
         PrimerClass, typer.Option(help="The primer class")
     ] = PrimerClass.PRIMERSCHEMES.value,  # type: ignore
+    collection: Annotated[
+        Optional[list[Collection]], typer.Option(help="The collection")
+    ] = None,
 ):
     """Create a new scheme in the required format"""
 
@@ -349,6 +354,9 @@ def create(
         and x.is_file()
     ]
 
+    # Create the collections set
+    collections = {x for x in collection} if collection is not None else set()
+
     # Create the info.json
     # Generate the md5s
     info = Info(
@@ -366,6 +374,7 @@ def create(
         derivedfrom=derivedfrom,
         primerclass=primerclass,
         articbedversion=primerbed_version,
+        collections=collections,
     )
 
     #####################################
@@ -425,7 +434,7 @@ def create(
 
 
 @modify_app.command()
-def change_status(
+def status(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(help="The path to info.json", readable=True, exists=True),
@@ -458,7 +467,7 @@ def change_status(
 
 
 @modify_app.command()
-def change_primerclass(
+def primerclass(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(help="The path to info.json", readable=True, exists=True),
@@ -593,6 +602,155 @@ def remove_citation(
     regenerate_readme(scheme_path, info, pngs)
 
 
+@modify_app.command()
+def remove_collection(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    collection: Annotated[Collection, typer.Argument(help="The Collection to remove")],
+):
+    """Remove an Collection from the Collection list in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Check if collection is already not in the list
+    if collection not in info.collections:
+        raise ValueError(f"{collection} is already not in the collection list")
+    info.collections.remove(collection)
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def add_collection(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    collection: Annotated[Collection, typer.Argument(help="The Collection to add")],
+):
+    """Add a Collection to the Collection list in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Check if author is already not in the list
+    if collection in info.collections:
+        raise ValueError(f"{collection} is already in the collection list")
+    info.collections.add(collection)
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def description(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    description: Annotated[
+        str,
+        typer.Argument(
+            help="The new description. Use 'None' to remove the description"
+        ),
+    ],
+):
+    """Replaces the description in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Add the description
+    if description == "None":
+        info.description = None
+    else:
+        info.description = description.strip()
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def derivedfrom(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    derivedfrom: Annotated[
+        str,
+        typer.Argument(
+            help="The new derivedfrom. Use 'None' to remove the derivedfrom"
+        ),
+    ],
+):
+    """Replaces the derivedfrom in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Add the derivedfrom
+    if derivedfrom == "None":
+        info.derivedfrom = None
+    else:
+        info.derivedfrom = derivedfrom.strip()
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def license(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    license: Annotated[
+        str,
+        typer.Argument(
+            help="The new license. Use 'None' show the work is not licensed (Not recommended)"
+        ),
+    ],
+):
+    """Replaces the license in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    info.license = license.strip()
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
 @app.command()
 def build_index(
     gitaccount: Annotated[
@@ -703,6 +861,73 @@ def regenerate(
 
     # Regenerate the readme
     regenerate_readme(scheme_path, info, pngs)
+
+
+@app.command()
+def download(
+    output: Annotated[pathlib.Path, typer.Option(help="Where to output the schemes")],
+    index_url: Annotated[
+        str, typer.Option(help="The URL to the index.json")
+    ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
+):
+    """Download all schemes from the index.json"""
+    # Download the index.json
+    index = json.loads(requests.get(index_url).text)
+
+    # Create the output directory
+    output_primerschemes = output / "primerschemes"
+    output_primerschemes.mkdir(exist_ok=False)
+
+    # Grab the primerschemes
+    primerschemes = index.get("primerschemes", {})
+
+    # Download all the schemes
+    for schemename in primerschemes:
+        for ampliconsize in primerschemes[schemename]:
+            for schemeversion in primerschemes[schemename][ampliconsize]:
+                scheme = primerschemes[schemename][ampliconsize][schemeversion]
+                scheme_dir = (
+                    output_primerschemes
+                    / schemename
+                    / str(ampliconsize)
+                    / schemeversion
+                )
+                scheme_dir.mkdir(parents=True, exist_ok=True)
+
+                # Download the bedfile
+                bedfile_url = scheme["primer_bed_url"]
+                bedfile_text = requests.get(bedfile_url).text
+                bedfile_hash = hashlib.md5(bedfile_text.encode()).hexdigest()
+                # Check hashes before writing
+                if bedfile_hash != scheme["primer_bed_md5"]:
+                    raise ValueError(
+                        f"Hash mismatch for {scheme['primer_bed_md5']}. Expected {scheme['primer_bed_md5']} but got {bedfile_hash}"
+                    )
+                # Write the file
+                with open(scheme_dir / "primer.bed", "w") as f:
+                    f.write(bedfile_text)
+
+                # Download the reference
+                reference_url = scheme["reference_fasta_url"]
+                reference_text = requests.get(reference_url).text
+                reference_hash = hashlib.md5(reference_text.encode()).hexdigest()
+                # Check hashes before writing
+                if reference_hash != scheme["reference_fasta_md5"]:
+                    raise ValueError(
+                        f"Hash mismatch for {scheme['reference_fasta_md5']}. Expected {scheme['reference_fasta_md5']} but got {reference_hash}"
+                    )
+                # Write the file
+                with open(scheme_dir / "reference.fasta", "w") as f:
+                    f.write(reference_text)
+
+                # Download the info.json
+                info_url = scheme["info_json_url"]
+                info_text = requests.get(info_url).text
+                # Write the file
+                with open(scheme_dir / "info.json", "w") as f:
+                    f.write(info_text)
+
+                print(f"Downloaded:\t{schemename}/{ampliconsize}/{schemeversion}")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import pathlib
 import json
 import sys
 import hashlib
-from primal_page.schemas import PrimerClass, determine_bedfile_version, BedfileVersion
+from primal_page.schemas import PrimerClass
 
 
 def hashfile(fname):
@@ -38,6 +38,12 @@ def parse_version(
     version_dict["schemeversion"] = info_dict["schemeversion"]
     version_dict["ampliconsize"] = info_dict["ampliconsize"]
     version_dict["articbedversion"] = info_dict["articbedversion"]
+
+    # Add a check for collections in the info.json file
+    if "collections" in info_dict:
+        version_dict["collections"] = info_dict["collections"]
+    else:
+        version_dict["collections"] = {}
 
     # Add the primer.bed file
     primerbed = version_path / "primer.bed"
@@ -223,9 +229,9 @@ def create_index(
 
     # Update the github commit
     if git_commit is not None:
-        json_dict[
-            "github-commit-sha"
-        ] = git_commit  # This is added so that the index.json changes when the github commit changes
+        json_dict["github-commit-sha"] = (
+            git_commit  # This is added so that the index.json changes when the github commit changes
+        )
 
     with open(parent_dir / "index.json", "w") as f:
         json.dump(json_dict, f, indent=4, sort_keys=True)
