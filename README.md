@@ -22,6 +22,7 @@ $ [OPTIONS] COMMAND [ARGS]...
 * `modify`: Modify an existing scheme's metadata...
 * `regenerate`: Regenerate the info.json and README.md...
 * `remove`: Remove a scheme's version from the repo,...
+* `download`: Download all vital files from the index
 
 ## `build-index`
 
@@ -141,14 +142,14 @@ $ modify add-citation [OPTIONS] SCHEMEINFO CITATION
 
 * `--help`: Show this message and exit.
 
-### `modify change-primerclass`
+### `modify primerclass`
 
 Append an author to the authors list in the info.json file
 
 **Usage**:
 
 ```console
-$ modify change-primerclass [OPTIONS] SCHEMEINFO PRIMERCLASS:{primerschemes}
+$ modify primerclass [OPTIONS] SCHEMEINFO PRIMERCLASS:{primerschemes}
 ```
 
 **Arguments**:
@@ -160,14 +161,14 @@ $ modify change-primerclass [OPTIONS] SCHEMEINFO PRIMERCLASS:{primerschemes}
 
 * `--help`: Show this message and exit.
 
-### `modify change-status`
+### `modify status`
 
 Change the status field in the info.json
 
 **Usage**:
 
 ```console
-$ modify change-status [OPTIONS] SCHEMEINFO
+$ modify status [OPTIONS] SCHEMEINFO
 ```
 
 **Arguments**:
