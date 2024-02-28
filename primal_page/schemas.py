@@ -6,6 +6,8 @@ from enum import Enum
 import pathlib
 from primalhelper.bedfile import read_bed_file
 
+INFO_SCHEMA = "v1.3.0"
+
 SCHEMENAME_PATTERN = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"
 
@@ -193,7 +195,7 @@ class Info(BaseModel):
     species: Annotated[set[int | str], AfterValidator(not_empty)]
     license: str = "CC BY-SA 4.0"
     primerclass: PrimerClass = PrimerClass.PRIMERSCHEMES
-    infoschema: str = "v1.3.0"
+    infoschema: str = INFO_SCHEMA
     articbedversion: BedfileVersion
     # Add the optional fields
     description: str | None = None

@@ -18,6 +18,7 @@ from primal_page.schemas import (
     validate_bedfile,
     BEDFILERESULT,
     Collection,
+    INFO_SCHEMA,
 )
 
 
@@ -476,7 +477,7 @@ def primerclass(
         PrimerClass, typer.Argument(help="The primerclass to change to")
     ],
 ):
-    """Append an author to the authors list in the info.json file"""
+    """Change the primerclass field in the info.json"""
 
     info = json.load(schemeinfo.open())
     info = Info(**info)
@@ -814,6 +815,7 @@ def regenerate(
         - Rehashes info.json's primer_bed_md5 and reference_fasta_md5
         - Regenerates the README.md file
         - Recalculate the artic-primerbed version
+        - Updates the infoschema version to current
 
     Ensures work/config.json has no absolute paths
         - Ensures hashes in config.json are removed
@@ -847,6 +849,7 @@ def regenerate(
     info_json["reference_fasta_md5"] = hashfile(scheme_path / "reference.fasta")
 
     info = Info(**info_json)
+    info.infoschema = INFO_SCHEMA
 
     # Get the pngs
     pngs = [path for path in scheme_path.rglob("*.png")]
