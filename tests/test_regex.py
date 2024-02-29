@@ -5,16 +5,18 @@ import re
 import pathlib
 
 from primal_page.schemas import (
+    validate_schemeversion,
+    validate_schemename,
+    not_empty,
+    BedfileVersion,
+)
+from primal_page.bedfiles import (
     V2_PRIMERNAME,
     V1_PRIMERNAME,
     determine_primername_version,
     PrimerNameVersion,
     convert_v1_primernames_to_v2,
-    validate_schemeversion,
-    validate_schemename,
-    not_empty,
     determine_bedfile_version,
-    BedfileVersion,
     validate_bedfile_line_structure,
 )
 

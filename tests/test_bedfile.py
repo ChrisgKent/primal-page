@@ -1,4 +1,4 @@
-from primal_page.schemas import validate_bedfile, BEDFILERESULT
+from primal_page.bedfiles import validate_bedfile, BEDFILERESULT
 
 import unittest
 import pathlib
