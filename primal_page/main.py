@@ -13,12 +13,14 @@ from primal_page.schemas import (
     PrimerClass,
     SchemeStatus,
     Info,
+    Collection,
+    INFO_SCHEMA,
+)
+from primal_page.bedfiles import (
     determine_bedfile_version,
     BedfileVersion,
     validate_bedfile,
     BEDFILERESULT,
-    Collection,
-    INFO_SCHEMA,
 )
 
 
