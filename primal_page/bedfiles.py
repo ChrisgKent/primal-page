@@ -136,7 +136,7 @@ class BedLine:
         start: int,
         end: int,
         primername: str,
-        score: int,
+        pool: int,
         strand: str,
         seq: str,
     ):
@@ -144,7 +144,7 @@ class BedLine:
         self.start = start
         self.end = end
         self.name = primername
-        self.score = score
+        self.pool = pool
         self.strand = strand
         self.seq = seq
 
@@ -153,7 +153,7 @@ class BedLine:
         self.amplicon_number = int(primername.split("_")[1])
 
     def __str__(self):
-        return f"{self.chrom}\t{self.start}\t{self.end}\t{self.name}\t{self.score}\t{self.strand}\t{self.seq}"
+        return f"{self.chrom}\t{self.start}\t{self.end}\t{self.name}\t{self.pool}\t{self.strand}\t{self.seq}"
 
 
 def read_bedlines(bedfilepath: pathlib.Path) -> tuple[list[BedLine], list[str]]:
@@ -171,7 +171,7 @@ def read_bedlines(bedfilepath: pathlib.Path) -> tuple[list[BedLine], list[str]]:
                 start=int(line[1]),
                 end=int(line[2]),
                 primername=line[3],
-                score=int(line[4]),
+                pool=int(line[4]),
                 strand=line[5],
                 seq=line[6],
             )
