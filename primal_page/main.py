@@ -6,7 +6,6 @@ import hashlib
 import json
 from typing import Optional
 from enum import Enum
-import requests
 
 from primal_page.build_index import create_index
 from primal_page.schemas import (
