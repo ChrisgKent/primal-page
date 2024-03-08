@@ -15,6 +15,8 @@ from primal_page.schemas import (
     Info,
     Collection,
     INFO_SCHEMA,
+    validate_schemeversion,
+    validate_schemename,
 )
 from primal_page.bedfiles import (
     determine_bedfile_version,
@@ -22,6 +24,7 @@ from primal_page.bedfiles import (
     validate_bedfile,
     BEDFILERESULT,
 )
+from primal_page.download import download_all_func, download_scheme_func, fetch_index
 
 
 class FindResult(Enum):
@@ -869,70 +872,54 @@ def regenerate(
 
 
 @app.command()
-def download(
+def download_all(
     output: Annotated[pathlib.Path, typer.Option(help="Where to output the schemes")],
     index_url: Annotated[
         str, typer.Option(help="The URL to the index.json")
     ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
 ):
     """Download all schemes from the index.json"""
-    # Download the index.json
-    index = json.loads(requests.get(index_url).text)
+    # Fetch the index and store in memory
+    index = fetch_index(index_url)
 
     # Create the output directory
     output_primerschemes = output / "primerschemes"
-    output_primerschemes.mkdir(exist_ok=False)
+    output_primerschemes.mkdir(exist_ok=True)
 
-    # Grab the primerschemes
-    primerschemes = index.get("primerschemes", {})
+    download_all_func(output=output, index=index)
 
-    # Download all the schemes
-    for schemename in primerschemes:
-        for ampliconsize in primerschemes[schemename]:
-            for schemeversion in primerschemes[schemename][ampliconsize]:
-                scheme = primerschemes[schemename][ampliconsize][schemeversion]
-                scheme_dir = (
-                    output_primerschemes
-                    / schemename
-                    / str(ampliconsize)
-                    / schemeversion
-                )
-                scheme_dir.mkdir(parents=True, exist_ok=True)
 
-                # Download the bedfile
-                bedfile_url = scheme["primer_bed_url"]
-                bedfile_text = requests.get(bedfile_url).text
-                bedfile_hash = hashlib.md5(bedfile_text.encode()).hexdigest()
-                # Check hashes before writing
-                if bedfile_hash != scheme["primer_bed_md5"]:
-                    raise ValueError(
-                        f"Hash mismatch for {scheme['primer_bed_md5']}. Expected {scheme['primer_bed_md5']} but got {bedfile_hash}"
-                    )
-                # Write the file
-                with open(scheme_dir / "primer.bed", "w") as f:
-                    f.write(bedfile_text)
+@app.command()
+def download_scheme(
+    schemename: Annotated[
+        str,
+        typer.Argument(help="The name of the scheme", callback=validate_schemename),
+    ],
+    ampliconsize: Annotated[int, typer.Argument(help="Amplicon size")],
+    schemeversion: Annotated[
+        str, typer.Argument(help="Scheme version", callback=validate_schemeversion)
+    ],
+    output: Annotated[pathlib.Path, typer.Option(help="Where to output the schemes")],
+    index_url: Annotated[
+        str, typer.Option(help="The URL to the index.json")
+    ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
+):
+    """Download a scheme from the index.json"""
 
-                # Download the reference
-                reference_url = scheme["reference_fasta_url"]
-                reference_text = requests.get(reference_url).text
-                reference_hash = hashlib.md5(reference_text.encode()).hexdigest()
-                # Check hashes before writing
-                if reference_hash != scheme["reference_fasta_md5"]:
-                    raise ValueError(
-                        f"Hash mismatch for {scheme['reference_fasta_md5']}. Expected {scheme['reference_fasta_md5']} but got {reference_hash}"
-                    )
-                # Write the file
-                with open(scheme_dir / "reference.fasta", "w") as f:
-                    f.write(reference_text)
+    # Fetch the index and store in memory
+    index = fetch_index(index_url)
 
-                # Download the info.json
-                info_url = scheme["info_json_url"]
-                info_text = requests.get(info_url).text
-                # Write the file
-                with open(scheme_dir / "info.json", "w") as f:
-                    f.write(info_text)
+    # Create the output directory
+    output_primerschemes = output / "primerschemes"
+    output_primerschemes.mkdir(exist_ok=True)
 
-                print(f"Downloaded:\t{schemename}/{ampliconsize}/{schemeversion}")
+    download_scheme_func(
+        output_dir=output_primerschemes,
+        index=index,
+        schemename=schemename,
+        ampliconsize=str(ampliconsize),
+        schemeversion=schemeversion,
+    )
 
 
 if __name__ == "__main__":
