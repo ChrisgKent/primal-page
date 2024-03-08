@@ -433,3 +433,98 @@ primal-page create primal-page create ... --output ~/primerschemes/primerschemes
 > Create a pull request 
 
 
+# New Schemas
+
+ ## PrimerNames Versions
+
+ Expected primernames (col3) in the primer.bed file
+
+ ### `V1`
+
+This is the first standard for primernames. It follows the general pattern of `{scheme-name|uuid}_{amplicon-number}_{LEFT|RIGHT}` and an optional `{_alt}` to denote spike in primers.
+
+Regex:
+
+ ```V1_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)(_ALT[0-9]*|_alt[0-9]*)*$"```
+
+Example:
+```
+SARS-CoV-2_10_LEFT
+SARS-CoV-2_10_LEFT_alt1
+```
+
+
+### `V2`
+
+This follows the pattern of `{scheme-name|uuid}_{amplicon-number}_{LEFT|RIGHT}_{primer-number}`. 
+- This now enforces that splitting on `_` will produce a consistent length, allowing the safe indexing of attributes. 
+- `primer-number` is not enforced to be continuous. Therefore, the `_0` numbered primer should not be thought of as the `original` and all other numbers as `alts`.
+
+
+Example:
+```
+SARS-CoV-2_10_LEFT_0
+SARS-CoV-2_10_LEFT_1
+```
+
+Regex:
+
+```V2_PRIMERNAME = r"^[a-zA-Z0-9\-]+_[0-9]+_(LEFT|RIGHT)_[0-9]+$"```
+
+
+## ARTIC-primer.bed Versions
+
+These are rough guidelines for the format of the primer.bed file. The general format is based on the [.bed file](https://en.wikipedia.org/wiki/BED_(file_format)) and maintains compatibility with other tools.
+
+colnames and indexes:
+- `0 - chrom`: The name of the reference genome the primers are indexed to
+- `1 - chromStart`: 0-based inclusive start coordinate
+- `2 - chromEnd`: 0-based non-inclusive end coordinate
+- `3 - primer-name`: Name of each primer
+- `4 - pool`: The pool each primer should be added into. 1 based.
+- `5 - strand`: Either `+` (forward) or `-` (reverse) primer
+- `6 - primer-sequence`: The 5'-3' sequence of the primer
+
+
+
+### V1
+> Depreciated 
+
+This was the original 6-col bedfile used very early in PrimalSchemes development, which excluded primer-sequence. 
+
+### V2
+> Legacy
+
+This uses the 7 columns described above, alongside `V1:primernames`.
+- Single chrom (reference) is expected
+- No header lines
+
+### V3
+> Current
+
+This uses the 7 columns described above, alongside `V2:primernames`.
+- Multiple chrom (references)
+- Circular primers are allowed. The start of x_LEFT can be greater than the end of x_RIGHT
+- Header lines are used. Denoted with the `#` character 
+
+ 
+## Scheme Version
+
+In the form of `v{Major}.{Minor}.{Patch}`
+- Major: New scheme being generated with differant input params
+- Minor: Change to primers. Either additional / removal of primers
+- Patch: No change to primers. Often used for rebalancing or change in formatting
+
+
+Regex:
+
+`VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"`
+
+
+## Scheme Name
+
+Must only contain `a-z`, `0-9`, and `-`. Cannot start or end with `-`
+
+Regex:
+
+`SCHEMENAME_PATTERN = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"`
