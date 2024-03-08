@@ -80,9 +80,9 @@ def fetch_index(index_url: str) -> dict:
         index_json = json.loads(r.text)
         return index_json
     except requests.exceptions.HTTPError as err:
-        raise SystemExit(err)
+        raise err
     except json.JSONDecodeError as err:
-        raise SystemExit(err)
+        raise err
 
 
 def download_all_func(index: dict, output: pathlib.Path):
