@@ -873,7 +873,10 @@ def regenerate(
 
 @app.command()
 def download_all(
-    output: Annotated[pathlib.Path, typer.Option(help="Where to output the schemes")],
+    output: Annotated[
+        pathlib.Path,
+        typer.Option(help="The directory the primerschemes dir will be created in"),
+    ],
     index_url: Annotated[
         str, typer.Option(help="The URL to the index.json")
     ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
@@ -899,7 +902,10 @@ def download_scheme(
     schemeversion: Annotated[
         str, typer.Argument(help="Scheme version", callback=validate_schemeversion)
     ],
-    output: Annotated[pathlib.Path, typer.Option(help="Where to output the schemes")],
+    output: Annotated[
+        pathlib.Path,
+        typer.Option(help="The directory the primerschemes dir will be created in"),
+    ],
     index_url: Annotated[
         str, typer.Option(help="The URL to the index.json")
     ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
