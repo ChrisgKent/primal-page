@@ -26,10 +26,11 @@
     ],
     "license": "CC BY-SA 4.0",
     "primerclass": "primerschemes",
-    "infoschema": "v1.2.0",
+    "infoschema": "v1.3.0",
     "articbedversion": "v3.0",
     "description": null,
-    "derivedfrom": null
+    "derivedfrom": null,
+    "collections": []
 }
 ```
 
