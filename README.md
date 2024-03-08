@@ -5,6 +5,12 @@
 
 This is the tooling for working with the primerschemes index
 
+## Contents
+
+[cli](https://github.com/ChrisgKent/primal-page?tab=readme-ov-file#cli)
+
+[schemas](https://github.com/ChrisgKent/primal-page?tab=readme-ov-file#new-schemas)
+
 # CLI
 
 **Usage**:
