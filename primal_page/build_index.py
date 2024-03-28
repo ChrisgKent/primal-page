@@ -196,7 +196,7 @@ def create_index(
     # For any Scheme, we can generate a JSON file with the following format:
     json_dict = dict()
     # Ensure the parent_dir is a pathlib.Path
-    if type(parent_dir) == str:
+    if isinstance(parent_dir, str):
         parent_dir = pathlib.Path(parent_dir)
     # Parse panels and schemes
     pclasses = [i.value for i in PrimerClass]
