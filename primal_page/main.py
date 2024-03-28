@@ -54,7 +54,7 @@ def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
     Trim whitespace from the ends of a file.
         - Reads file into memory. Not suitable for large files
     """
-    with open(in_path, "r") as infile:
+    with open(in_path) as infile:
         input_file = infile.read().strip()
 
     with open(out_path, "w") as outfile:
@@ -333,7 +333,7 @@ def create(
     # Search for pngs
     pngs = [path for path in found_files if path.name.endswith(".png")]
     # Search for html
-    html = [path for path in found_files if path.name.endswith(".html")]
+    htmls = [path for path in found_files if path.name.endswith(".html")]
     # Search for msas
     msas = [
         path
@@ -418,7 +418,7 @@ def create(
         for png in pngs:
             shutil.copy(png, working_dir / png.name)
         # Copy the htmls
-        for html in html:
+        for html in htmls:
             shutil.copy(html, working_dir / html.name)
         # Copy the msas
         for msa in msas:

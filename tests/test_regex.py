@@ -203,7 +203,6 @@ class TestDetermine_primername_version(unittest.TestCase):
             "marv-2023_100_RIGHT_ALT",
             "yby17_1_LEFT_alt",
             "yby17_1_LEFT_ALT",
-            "yby17_1_LEFT_ALT",
             "easyfail",
             "marv-2023_1_RIGHT_2_alt",
             "artic*nCoV_100_LEFT_99",
@@ -252,7 +251,7 @@ class TestValidateBedfileLineStructure(unittest.TestCase):
         """
         Test that the bed file structure is correct
         """
-        with open(self.v3bedfile, "r") as bedfile:
+        with open(self.v3bedfile) as bedfile:
             for line in bedfile.readlines():
                 self.assertTrue(validate_bedfile_line_structure(line))
 
@@ -260,7 +259,7 @@ class TestValidateBedfileLineStructure(unittest.TestCase):
         """
         Test that the bed file structure is correct
         """
-        with open(self.v2bedfile, "r") as bedfile:
+        with open(self.v2bedfile) as bedfile:
             for line in bedfile.readlines():
                 self.assertTrue(validate_bedfile_line_structure(line))
 
@@ -268,7 +267,7 @@ class TestValidateBedfileLineStructure(unittest.TestCase):
         """
         V1 Bedfiles are not supported in this index
         """
-        with open(self.v1bedfile, "r") as bedfile:
+        with open(self.v1bedfile) as bedfile:
             results = [
                 validate_bedfile_line_structure(line) for line in bedfile.readlines()
             ]
@@ -278,7 +277,7 @@ class TestValidateBedfileLineStructure(unittest.TestCase):
         """
         Test that the bed file structure is correct
         """
-        with open(self.invalidbedfile, "r") as bedfile:
+        with open(self.invalidbedfile) as bedfile:
             results = [
                 validate_bedfile_line_structure(line) for line in bedfile.readlines()
             ]

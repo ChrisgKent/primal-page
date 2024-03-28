@@ -41,10 +41,7 @@ def parse_version(
     version_dict["articbedversion"] = info_dict["articbedversion"]
 
     # Add a check for collections in the info.json file
-    if "collections" in info_dict:
-        version_dict["collections"] = info_dict["collections"]
-    else:
-        version_dict["collections"] = {}
+    version_dict["collections"] = info_dict.get("collections", {})
 
     # Add the primer.bed file
     primerbed = version_path / "primer.bed"

@@ -23,3 +23,19 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 primal-page = "primal_page.main:app"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # isort
+    "I",
+]
+ignore = ["E501"]
+

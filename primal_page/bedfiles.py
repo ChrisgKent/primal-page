@@ -213,7 +213,7 @@ def read_bed_file(bedfilepath: pathlib.Path) -> tuple[list[list[str]], list[str]
     :return: bedfile_list, bedfile_header
     """
 
-    with open(bedfilepath, "r") as bedfile:
+    with open(bedfilepath) as bedfile:
         bedfile_list: list[list[str]] = []
         bedfile_header: list[str] = []
 
