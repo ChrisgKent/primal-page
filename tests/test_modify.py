@@ -1,13 +1,12 @@
-import pathlib
 import unittest
 from copy import deepcopy
 
 from primal_page.schemas import (
-    Info,
-    SchemeStatus,
     BedfileVersion,
     Collection,
+    Info,
     PrimerClass,
+    SchemeStatus,
 )
 
 base_info = Info(
