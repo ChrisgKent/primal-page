@@ -21,7 +21,7 @@ from primal_page.bedfiles import (
     determine_bedfile_version,
     BedfileVersion,
     validate_bedfile,
-    BEDFILERESULT,
+    BEDFileResult,
 )
 from primal_page.download import download_all_func, download_scheme_func, fetch_index
 
@@ -77,15 +77,15 @@ def regenerate_readme(path: pathlib.Path, info: Info, pngs: list[pathlib.Path]):
             f"# {info.schemename} {info.ampliconsize}bp {info.schemeversion}\n\n"
         )
 
-        if info.description != None:
-            readme.write(f"## Description\n\n")
+        if info.description is not None:
+            readme.write("## Description\n\n")
             readme.write(f"{info.description}\n\n")
 
-        readme.write(f"## Overviews\n\n")
+        readme.write("## Overviews\n\n")
         for png in pngs:
             readme.write(f"![{png.name}](work/{png.name})\n\n")
 
-        readme.write(f"## Details\n\n")
+        readme.write("## Details\n\n")
 
         # Write the detials into the readme
         readme.write(f"""```json\n{info.model_dump_json(indent=4)}\n```\n\n""")
@@ -224,16 +224,13 @@ def create(
             help="The species this scheme targets. Please use NCBI taxonomy ids"
         ),
     ],
+    authors: Annotated[list[str], typer.Option(help="Any authors")],
     schemestatus: Annotated[
         SchemeStatus, typer.Option(help="Scheme status")
     ] = SchemeStatus.DRAFT.value,  # type: ignore
     citations: Annotated[
         list[str], typer.Option(help="Any associated citations. Please use DOI")
     ] = [],
-    authors: Annotated[list[str], typer.Option(help="Any authors")] = [
-        "quick lab",
-        "artic network",
-    ],
     primerbed: Annotated[
         Optional[pathlib.Path],
         typer.Option(
@@ -284,14 +281,14 @@ def create(
     valid_primer_bed = find_primerbed(primerbed, found_files, schemepath)
 
     match validate_bedfile(valid_primer_bed):
-        case BEDFILERESULT.VALID:
+        case BEDFileResult.VALID:
             pass
-        case BEDFILERESULT.INVALID_VERSION:
-            raise ValueError(
+        case BEDFileResult.INVALID_VERSION:
+            raise typer.BadParameter(
                 f"Could not determine primerbed version for {valid_primer_bed}"
             )
-        case BEDFILERESULT.INVALID_STRUCTURE:
-            raise ValueError(
+        case BEDFileResult.INVALID_STRUCTURE:
+            raise typer.BadParameter(
                 f"Invalid primerbed structure for {valid_primer_bed}. Please ensure it is a valid 7 column bedfile"
             )
     # Get primerbed version
@@ -318,7 +315,7 @@ def create(
             if "algorithmversion" in config_json.keys():
                 algorithmversion = str(config_json["algorithmversion"])
             else:
-                raise ValueError(
+                raise typer.BadParameter(
                     f"algorithmversion not specified in {configpath}. Please specify manually with --algorithmversion"
                 )
 
@@ -372,7 +369,7 @@ def create(
         reference_fasta_md5="NONE",  # Will be updated later
         status=schemestatus,
         citations=set(citations),
-        authors=set(authors),
+        authors=authors,
         algorithmversion=algorithmversion,  # type: ignore
         species=set(species),
         description=description,
@@ -435,7 +432,7 @@ def create(
     except Exception as e:
         # Cleanup
         shutil.rmtree(repo_dir)
-        raise Exception(f"{e}\nCleaning up {repo_dir}")
+        raise typer.BadParameter(f"{e}\nCleaning up {repo_dir}")
 
 
 @modify_app.command()
@@ -457,7 +454,7 @@ def status(
     info = Info(**info)
 
     if info.status == schemestatus.value:
-        raise ValueError(f"{schemeinfo} status is already {schemestatus}")
+        raise typer.BadParameter(f"{schemeinfo} status is already {schemestatus}")
     else:
         info.status = schemestatus
 
@@ -506,6 +503,12 @@ def add_author(
         typer.Argument(help="The path to info.json", readable=True, exists=True),
     ],
     author: Annotated[str, typer.Argument(help="The author to add")],
+    author_index: Annotated[
+        Optional[int],
+        typer.Option(
+            help="The 0-based index to insert the author at. Default is the end"
+        ),
+    ],
 ):
     """Append an author to the authors list in the info.json file"""
 
@@ -514,8 +517,13 @@ def add_author(
 
     # Check if author is already in the list
     if author in info.authors:
-        raise ValueError(f"{author} is already in the authors list")
-    info.authors.add(author)
+        raise typer.BadParameter(f"{author} is already in the authors list")
+
+    if author_index is None:
+        info.authors.append(author)
+    else:
+        # Insert is safe, will append if index is out of range
+        info.authors.insert(author_index, author)
 
     # Write the validated info.json
     with open(schemeinfo, "w") as infofile:
@@ -541,8 +549,69 @@ def remove_author(
 
     # Check if author is already not in the list
     if author not in info.authors:
-        raise ValueError(f"{author} is already not in the authors list")
+        raise typer.BadParameter(f"{author} is already not in the authors list")
     info.authors.remove(author)
+
+    # Write the validated info.json
+    with open(schemeinfo, "w") as infofile:
+        infofile.write(info.model_dump_json(indent=4))
+
+    # Update the README
+    scheme_path = schemeinfo.parent
+    pngs = [path for path in scheme_path.rglob("*.png")]
+    regenerate_readme(scheme_path, info, pngs)
+
+
+@modify_app.command()
+def reorder_authors(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    author_index: Annotated[
+        Optional[str],
+        typer.Argument(
+            help="The indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end"
+        ),
+    ] = None,
+):
+    """Reorder the authors in the info.json file"""
+    info = json.load(schemeinfo.open())
+    info = Info(**info)
+
+    # Reorder interactively
+    if author_index is None:
+        # Current order
+        typer.echo("Current order:")
+        for index, author in enumerate(info.authors):
+            typer.echo(f"{index}: {author}")
+
+        # Get the new order
+        new_order_str: str = typer.prompt(
+            "Please provide the indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end",
+            type=str,
+        )
+        new_order = [int(x) for x in new_order_str.split()]
+    else:  # Reorder via cli
+        new_order = [int(x) for x in author_index.split()]
+
+    # Check for duplicates
+    if len(new_order) != len(set(new_order)):
+        raise typer.BadParameter("Duplicate indexes found")
+
+    # Append authors in the new order
+    new_authors = []
+    for new_index in new_order:
+        if new_index >= len(info.authors) or new_index < 0:
+            raise typer.BadParameter(f"{new_index} is out of range")
+        new_authors.append(info.authors[new_index])
+
+    # Append any authors not in the new order
+    for index, author in enumerate(info.authors):
+        if index not in new_order:
+            new_authors.append(author)
+
+    info.authors = new_authors
 
     # Write the validated info.json
     with open(schemeinfo, "w") as infofile:
@@ -568,7 +637,7 @@ def add_citation(
 
     # Check if citation is already in the list
     if citation in info.citations:
-        raise ValueError(f"{citation} is areadly in the citation list")
+        raise typer.BadParameter(f"{citation} is areadly in the citation list")
     info.citations.add(citation)
 
     # Write the validated info.json
@@ -594,7 +663,7 @@ def remove_citation(
     info = Info(**info)
 
     if citation not in info.citations:
-        raise ValueError(f"{citation} is not in the citation list")
+        raise typer.BadParameter(f"{citation} is not in the citation list")
     info.citations.remove(citation)
 
     # Write the validated info.json
@@ -621,7 +690,7 @@ def remove_collection(
 
     # Check if collection is already not in the list
     if collection not in info.collections:
-        raise ValueError(f"{collection} is already not in the collection list")
+        raise typer.BadParameter(f"{collection} is already not in the collection list")
     info.collections.remove(collection)
 
     # Write the validated info.json
@@ -648,7 +717,7 @@ def add_collection(
 
     # Check if author is already not in the list
     if collection in info.collections:
-        raise ValueError(f"{collection} is already in the collection list")
+        raise typer.BadParameter(f"{collection} is already in the collection list")
     info.collections.add(collection)
 
     # Write the validated info.json
@@ -791,7 +860,7 @@ def remove(
     """Remove a scheme's version from the repo, will also remove size and schemename directories if empty"""
     # Check that this is an info.json file (for safety)
     if schemeinfo.name != "info.json":
-        raise ValueError(f"{schemeinfo} is not an info.json file")
+        raise typer.BadParameter(f"{schemeinfo} is not an info.json file")
 
     # Remove the schemeversion directory
     shutil.rmtree(schemeinfo.parent)
@@ -826,7 +895,7 @@ def regenerate(
     """
     # Check that this is an info.json file (for safety)
     if schemeinfo.name != "info.json":
-        raise ValueError(f"{schemeinfo} is not an info.json file")
+        raise typer.BadParameter(f"{schemeinfo} is not an info.json file")
 
     # Get the scheme path
     scheme_path = schemeinfo.parent
@@ -843,7 +912,7 @@ def regenerate(
     # if articbedversion not set then set it
     articbedversion = determine_bedfile_version(scheme_path / "primer.bed")
     if articbedversion == BedfileVersion.INVALID:
-        raise ValueError(
+        raise typer.BadParameter(
             f"Could not determine artic-primerbed version for {scheme_path / 'primer.bed'}"
         )
     info_json["articbedversion"] = articbedversion.value
