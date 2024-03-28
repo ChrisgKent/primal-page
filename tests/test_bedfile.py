@@ -1,4 +1,4 @@
-from primal_page.bedfiles import validate_bedfile, BEDFILERESULT
+from primal_page.bedfiles import validate_bedfile, BEDFileResult
 
 import unittest
 import pathlib
@@ -14,20 +14,20 @@ class TestBedfile(unittest.TestCase):
     def test_validate_bedfile(self):
         # Test v1
         self.assertEqual(
-            validate_bedfile(self.v1bedfile), BEDFILERESULT.INVALID_STRUCTURE
+            validate_bedfile(self.v1bedfile), BEDFileResult.INVALID_STRUCTURE
         )
         # Test v2
-        self.assertEqual(validate_bedfile(self.v2bedfile), BEDFILERESULT.VALID)
+        self.assertEqual(validate_bedfile(self.v2bedfile), BEDFileResult.VALID)
         # Test v3
-        self.assertEqual(validate_bedfile(self.v3bedfile), BEDFILERESULT.VALID)
+        self.assertEqual(validate_bedfile(self.v3bedfile), BEDFileResult.VALID)
         # Test invalid
         self.assertEqual(
-            validate_bedfile(self.invalidbedfile), BEDFILERESULT.INVALID_VERSION
+            validate_bedfile(self.invalidbedfile), BEDFileResult.INVALID_VERSION
         )
         # Test invalid structure
         self.assertEqual(
             validate_bedfile(self.invalidstructbedfile),
-            BEDFILERESULT.INVALID_STRUCTURE,
+            BEDFileResult.INVALID_STRUCTURE,
         )
 
 
