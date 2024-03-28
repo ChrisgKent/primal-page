@@ -83,6 +83,88 @@ class Info(BaseModel):
     derivedfrom: str | None = None
     collections: set[Collection] = set()
 
+    def add_collection(self, collection: Collection):
+        """Add a collection to the collections set"""
+        self.collections.add(collection)
+
+    def remove_collection(self, collection: Collection):
+        """
+        Remove a collection from the collections set.
+        Raises: KeyError if the collection is not in the set
+        """
+        self.collections.remove(collection)
+
+    def add_citation(self, citation: str):
+        """Add a citation to the citations set"""
+        self.citations.add(citation)
+
+    def remove_citation(self, citation: str):
+        """
+        Remove a citation from the citations set.
+        Raises: KeyError if the citation is not in the set
+        """
+        self.citations.remove(citation)
+
+    def add_author(self, author: str, author_index: int | None):
+        """Add an author to the authors list"""
+        if author not in self.authors:
+            if author_index is None:
+                self.authors.append(author)
+            else:
+                # Insert is safe, will append if index is out of range
+                self.authors.insert(author_index, author)
+
+    def remove_author(self, author: str):
+        """
+        Remove an author from the authors list.
+        Raises: ValueError if the author is not in the list
+        """
+        self.authors.remove(author)
+
+    def reorder_authors(self, new_order: list[int]):
+        """
+        Reorder the authors list
+        Raises:
+            ValueError if duplicate indexes are found
+            IndexError if the index is out of range
+        """
+        if len(new_order) != len(set(new_order)):
+            raise ValueError("Duplicate indexes found")
+            # Append authors in the new order
+
+        new_authors = []
+        for new_index in new_order:
+            if new_index >= len(self.authors) or new_index < 0:
+                raise IndexError(f"{new_index} is out of range")
+            new_authors.append(self.authors[new_index])
+
+        # Append any authors not in the new order
+        for index, author in enumerate(self.authors):
+            if index not in new_order:
+                new_authors.append(author)
+
+        self.authors = new_authors
+
+    def change_primerclass(self, new_class: PrimerClass):
+        """Change the primerclass"""
+        self.primerclass = new_class
+
+    def change_status(self, new_status: SchemeStatus):
+        """Change the status"""
+        self.status = new_status
+
+    def change_license(self, new_license: str):
+        """Change the license"""
+        self.license = new_license
+
+    def change_derivedfrom(self, new_derivedfrom: str):
+        """Change the derivedfrom"""
+        self.derivedfrom = new_derivedfrom
+
+    def change_description(self, new_description: str):
+        """Change the description"""
+        self.description = new_description
+
 
 if __name__ == "__main__":
     info = Info(

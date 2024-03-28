@@ -16,6 +16,7 @@ from primal_page.bedfiles import (
 )
 from primal_page.build_index import create_index
 from primal_page.download import download_all_func, download_scheme_func, fetch_index
+from primal_page.modify import regenerate_files, regenerate_readme
 from primal_page.schemas import (
     INFO_SCHEMA,
     Collection,
@@ -42,13 +43,6 @@ app.add_typer(
 )
 
 
-LICENSE_TXT_CC_BY_SA_4_0 = """\n\n------------------------------------------------------------------------
-
-This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/) 
-
-![](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)"""
-
-
 def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
     """
     Trim whitespace from the ends of a file.
@@ -59,40 +53,6 @@ def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
 
     with open(out_path, "w") as outfile:
         outfile.write(input_file)
-
-
-def regenerate_readme(path: pathlib.Path, info: Info, pngs: list[pathlib.Path]):
-    """
-    Regenerate the README.md file for a scheme
-
-    :param path: The path to the scheme directory
-    :type path: pathlib.Path
-    :param info: The scheme information
-    :type info: Info
-    :param pngs: The list of PNG files
-    :type pngs: list[pathlib.Path]
-    """
-
-    with open(path / "README.md", "w") as readme:
-        readme.write(
-            f"# {info.schemename} {info.ampliconsize}bp {info.schemeversion}\n\n"
-        )
-
-        if info.description is not None:
-            readme.write("## Description\n\n")
-            readme.write(f"{info.description}\n\n")
-
-        readme.write("## Overviews\n\n")
-        for png in pngs:
-            readme.write(f"![{png.name}](work/{png.name})\n\n")
-
-        readme.write("## Details\n\n")
-
-        # Write the detials into the readme
-        readme.write(f"""```json\n{info.model_dump_json(indent=4)}\n```\n\n""")
-
-        if info.license == "CC BY-SA 4.0":
-            readme.write(LICENSE_TXT_CC_BY_SA_4_0)
 
 
 def hashfile(fname: pathlib.Path) -> str:
@@ -433,7 +393,7 @@ def create(
     except Exception as e:
         # Cleanup
         shutil.rmtree(repo_dir)
-        raise typer.BadParameter(f"{e}\nCleaning up {repo_dir}")
+        raise typer.BadParameter(f"{e}\nCleaning up {repo_dir}") from None
 
 
 @modify_app.command()
@@ -454,19 +414,11 @@ def status(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    if info.status == schemestatus.value:
-        raise typer.BadParameter(f"{schemeinfo} status is already {schemestatus}")
-    else:
-        info.status = schemestatus
+    # Change the status
+    info.change_status(schemestatus)
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -484,17 +436,11 @@ def primerclass(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    # Check if author is already in the list
-    info.primerclass = primerclass
+    # Change the primerclass
+    info.change_primerclass(primerclass)
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -516,24 +462,10 @@ def add_author(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    # Check if author is already in the list
-    if author in info.authors:
-        raise typer.BadParameter(f"{author} is already in the authors list")
+    info.add_author(author, author_index)
 
-    if author_index is None:
-        info.authors.append(author)
-    else:
-        # Insert is safe, will append if index is out of range
-        info.authors.insert(author_index, author)
-
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -548,19 +480,13 @@ def remove_author(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    # Check if author is already not in the list
-    if author not in info.authors:
-        raise typer.BadParameter(f"{author} is already not in the authors list")
-    info.authors.remove(author)
+    try:
+        info.remove_author(author)
+    except KeyError:
+        raise typer.BadParameter(f"{author} is already not present") from None
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -596,32 +522,15 @@ def reorder_authors(
     else:  # Reorder via cli
         new_order = [int(x) for x in author_index.split()]
 
-    # Check for duplicates
-    if len(new_order) != len(set(new_order)):
-        raise typer.BadParameter("Duplicate indexes found")
+    try:
+        info.reorder_authors(new_order)
+    except ValueError as e:
+        raise typer.BadParameter(f"{e}") from None
+    except IndexError as e:
+        raise typer.BadParameter(f"{e}") from None
 
-    # Append authors in the new order
-    new_authors = []
-    for new_index in new_order:
-        if new_index >= len(info.authors) or new_index < 0:
-            raise typer.BadParameter(f"{new_index} is out of range")
-        new_authors.append(info.authors[new_index])
-
-    # Append any authors not in the new order
-    for index, author in enumerate(info.authors):
-        if index not in new_order:
-            new_authors.append(author)
-
-    info.authors = new_authors
-
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -636,19 +545,11 @@ def add_citation(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    # Check if citation is already in the list
-    if citation in info.citations:
-        raise typer.BadParameter(f"{citation} is areadly in the citation list")
-    info.citations.add(citation)
+    # Add the citation
+    info.add_citation(citation)
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -663,18 +564,13 @@ def remove_citation(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    if citation not in info.citations:
-        raise typer.BadParameter(f"{citation} is not in the citation list")
-    info.citations.remove(citation)
+    try:
+        info.remove_citation(citation)
+    except KeyError:
+        raise typer.BadParameter(f"{citation} is already not present") from None
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -690,18 +586,13 @@ def remove_collection(
     info = Info(**info)
 
     # Check if collection is already not in the list
-    if collection not in info.collections:
-        raise typer.BadParameter(f"{collection} is already not in the collection list")
-    info.collections.remove(collection)
+    try:
+        info.remove_collection(collection)
+    except KeyError:
+        raise typer.BadParameter(f"{collection} is already not present") from None
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -716,19 +607,10 @@ def add_collection(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    # Check if author is already not in the list
-    if collection in info.collections:
-        raise typer.BadParameter(f"{collection} is already in the collection list")
-    info.collections.add(collection)
+    info.add_collection(collection)
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -748,20 +630,11 @@ def description(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    # Add the description
-    if description == "None":
-        info.description = None
-    else:
-        info.description = description.strip()
+    # Change the description
+    info.change_description(description.strip())
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
@@ -782,26 +655,19 @@ def derivedfrom(
     info = Info(**info)
 
     # Add the derivedfrom
-    if derivedfrom == "None":
-        info.derivedfrom = None
-    else:
-        info.derivedfrom = derivedfrom.strip()
+    info.change_derivedfrom(derivedfrom.strip())
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @modify_app.command()
 def license(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     license: Annotated[
         str,
@@ -814,16 +680,11 @@ def license(
     info = json.load(schemeinfo.open())
     info = Info(**info)
 
-    info.license = license.strip()
+    # Change the license
+    info.change_license(license)
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Update the README
-    scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
-    regenerate_readme(scheme_path, info, pngs)
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
 
 
 @app.command()
@@ -925,19 +786,11 @@ def regenerate(
     info = Info(**info_json)
     info.infoschema = INFO_SCHEMA
 
-    # Get the pngs
-    pngs = [path for path in scheme_path.rglob("*.png")]
-
     #####################################
     # Final validation and create files #
     #####################################
 
-    # Write the validated info.json
-    with open(schemeinfo, "w") as infofile:
-        infofile.write(info.model_dump_json(indent=4))
-
-    # Regenerate the readme
-    regenerate_readme(scheme_path, info, pngs)
+    regenerate_files(info, schemeinfo)
 
 
 @app.command()
