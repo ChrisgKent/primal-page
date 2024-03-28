@@ -1,21 +1,21 @@
-import unittest
-import re
 import pathlib
+import re
+import unittest
 
-from primal_page.schemas import (
-    validate_schemeversion,
-    validate_schemename,
-    not_empty,
-    BedfileVersion,
-)
 from primal_page.bedfiles import (
-    V2_PRIMERNAME,
     V1_PRIMERNAME,
-    determine_primername_version,
+    V2_PRIMERNAME,
     PrimerNameVersion,
     convert_v1_primernames_to_v2,
     determine_bedfile_version,
+    determine_primername_version,
     validate_bedfile_line_structure,
+)
+from primal_page.schemas import (
+    BedfileVersion,
+    not_empty,
+    validate_schemename,
+    validate_schemeversion,
 )
 
 

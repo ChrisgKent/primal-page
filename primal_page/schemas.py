@@ -1,8 +1,9 @@
-from pydantic import BaseModel, PositiveInt
-from pydantic.functional_validators import AfterValidator
-from typing import Annotated
 import re
 from enum import Enum
+from typing import Annotated
+
+from pydantic import BaseModel, PositiveInt
+from pydantic.functional_validators import AfterValidator
 
 from primal_page.bedfiles import BedfileVersion
 

@@ -1,7 +1,8 @@
-import json
-import requests
 import hashlib
+import json
 import pathlib
+
+import requests
 
 
 def validate_hashes(input_text: str, expected_hash: str, output_file: pathlib.Path):

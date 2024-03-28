@@ -1,7 +1,7 @@
-from primal_page.bedfiles import validate_bedfile, BEDFileResult
-
-import unittest
 import pathlib
+import unittest
+
+from primal_page.bedfiles import BEDFileResult, validate_bedfile
 
 
 class TestBedfile(unittest.TestCase):

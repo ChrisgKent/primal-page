@@ -1,29 +1,30 @@
-import typer
-import pathlib
-from typing_extensions import Annotated
-import shutil
 import hashlib
 import json
-from typing import Optional
+import pathlib
+import shutil
 from enum import Enum
+from typing import Optional
 
+import typer
+from typing_extensions import Annotated
+
+from primal_page.bedfiles import (
+    BEDFileResult,
+    BedfileVersion,
+    determine_bedfile_version,
+    validate_bedfile,
+)
 from primal_page.build_index import create_index
+from primal_page.download import download_all_func, download_scheme_func, fetch_index
 from primal_page.schemas import (
+    INFO_SCHEMA,
+    Collection,
+    Info,
     PrimerClass,
     SchemeStatus,
-    Info,
-    Collection,
-    INFO_SCHEMA,
-    validate_schemeversion,
     validate_schemename,
+    validate_schemeversion,
 )
-from primal_page.bedfiles import (
-    determine_bedfile_version,
-    BedfileVersion,
-    validate_bedfile,
-    BEDFileResult,
-)
-from primal_page.download import download_all_func, download_scheme_func, fetch_index
 
 
 class FindResult(Enum):

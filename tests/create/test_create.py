@@ -1,9 +1,9 @@
-import unittest
+import json
 import pathlib
 import shutil
-import json
+import unittest
 
-from primal_page.main import create, find_config, find_primerbed, find_ref, FindResult
+from primal_page.main import FindResult, create, find_config, find_primerbed, find_ref
 from primal_page.schemas import SchemeStatus
 
 

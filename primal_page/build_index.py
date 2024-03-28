@@ -1,7 +1,8 @@
-import pathlib
-import json
-import sys
 import hashlib
+import json
+import pathlib
+import sys
+
 from primal_page.schemas import PrimerClass
 
 

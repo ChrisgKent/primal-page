@@ -1,9 +1,10 @@
-import unittest
-import pathlib
 import hashlib
+import pathlib
+import unittest
+
 import requests
 
-from primal_page.download import validate_hashes, fetch_index
+from primal_page.download import fetch_index, validate_hashes
 
 
 class TestValidateHashes(unittest.TestCase):
