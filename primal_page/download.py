@@ -2,7 +2,6 @@ import json
 import requests
 import hashlib
 import pathlib
-import sys
 
 
 def validate_hashes(input_text: str, expected_hash: str, output_file: pathlib.Path):
@@ -87,14 +86,12 @@ def fetch_index(index_url: str) -> dict:
 
 def download_all_func(index: dict, output: pathlib.Path):
     """Download all schemes from the index.json"""
-    from concurrent.futures import ThreadPoolExecutor
 
     # Grab the primerschemes
     primerschemes = index.get("primerschemes", {})
 
     # Download all the schemes
     # Create a list of all schemes
-    schemes = []
     for schemename in primerschemes:
         for ampliconsize in primerschemes[schemename]:
             for schemeversion in primerschemes[schemename][ampliconsize]:
