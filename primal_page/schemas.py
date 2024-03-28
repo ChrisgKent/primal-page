@@ -70,7 +70,7 @@ class Info(BaseModel):
     reference_fasta_md5: str
     status: SchemeStatus
     citations: set[str]
-    authors: Annotated[set[str], AfterValidator(not_empty)]
+    authors: Annotated[list[str], AfterValidator(not_empty)]
     algorithmversion: str
     species: Annotated[set[int | str], AfterValidator(not_empty)]
     license: str = "CC BY-SA 4.0"
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         reference_fasta_md5="world",
         status=SchemeStatus.DRAFT,
         citations=set(),
-        authors=set("artic"),
+        authors=["artic"],
         algorithmversion="test",
         species=set("sars-cov-2"),
         articbedversion=BedfileVersion.V3,
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     print(info.model_dump_json(indent=4))
 
-    info.authors.add("hello")
+    info.authors.append("hello")
     print(info.model_dump_json(indent=4))
 
     # print(indexv.model_dump_json(indent=4))
