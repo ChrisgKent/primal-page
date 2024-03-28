@@ -181,24 +181,3 @@ if __name__ == "__main__":
         articbedversion=BedfileVersion.V3,
         collections=set(),
     )
-
-    # indexv = IndexVersion(
-    #    ampliconsize=400,
-    #    schemeversion="v0.0.0",
-    #    schemename="test",
-    #    primer_bed_md5="hello",
-    #    reference_fasta_md5="world",
-    #    status=SchemeStatus.DRAFT,
-    #    citations=[],
-    #    authors=[],
-    #    algorithmversion="test",
-    #    species=[1, "hello", 1],
-    #    IndexVersion="test",
-    # )
-
-    print(info.model_dump_json(indent=4))
-
-    info.authors.append("hello")
-    print(info.model_dump_json(indent=4))
-
-    # print(indexv.model_dump_json(indent=4))
