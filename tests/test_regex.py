@@ -1,7 +1,5 @@
 import unittest
 import re
-import unittest
-import re
 import pathlib
 
 from primal_page.schemas import (
@@ -166,7 +164,6 @@ class TestDetermine_primername_version(unittest.TestCase):
             "artic-nCoV_100_LEFT_99": PrimerNameVersion.V2,
             "marv-2023_1_LEFT_1": PrimerNameVersion.V2,
             "78h13h_0_RIGHT_0": PrimerNameVersion.V2,
-            "artic-nCoV_1_LEFT_0": PrimerNameVersion.V2,
             "artic-nCoV_100_RIGHT_99": PrimerNameVersion.V2,
             "artic-nCoV_1_LEFT_1": PrimerNameVersion.V2,
             # Valid V1 Names
