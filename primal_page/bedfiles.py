@@ -16,9 +16,16 @@ class PrimerNameVersion(Enum):
 
 def determine_primername_version(primername: str) -> PrimerNameVersion:
     """
-    Determine the primername version
-    :param primername: The primername to check
-    :return: The primername version
+    Determines the version of the primer name.
+
+    Args:
+        primername (str): The primer name to check.
+
+    Returns:
+        PrimerNameVersion: The version of the primer name.
+
+    Raises:
+        None.
     """
     if re.search(V2_PRIMERNAME, primername):
         return PrimerNameVersion.V2
@@ -54,20 +61,41 @@ def convert_v1_primernames_to_v2(primername: str) -> str:
 BEDFILE_LINE = r"^\S+\t\d+\t\d+\t\S+\t\d+\t(\+|\-)\t[a-zA-Z]+$"
 
 
-class BEDFILERESULT(Enum):
+class BEDFileResult(Enum):
     VALID = 0
     INVALID_VERSION = 1
     INVALID_STRUCTURE = 2
 
 
 def validate_bedfile_line_structure(line: str) -> bool:
+    """
+    This function validates the structure of a bedfile line, but not the contents.
+
+    Args:
+        line (str): The line to be validated.
+
+    Returns:
+        bool: True if the line structure is valid, False otherwise.
+    """
     line = line.strip()
     if line.startswith("#"):
         return True
     return re.search(BEDFILE_LINE, line) is not None
 
 
-def validate_bedfile(bedfile: pathlib.Path) -> BEDFILERESULT:
+def validate_bedfile(bedfile: pathlib.Path) -> BEDFileResult:
+    """
+    This function reads in a bedfile, checks the structure of the file, and validates the primername versions.
+
+    Args:
+        bedfile (pathlib.Path): The path to the bedfile to be validated.
+
+    Returns:
+        BEDFileResult: The result of the bedfile validation. It can be one of the following:
+            - BEDFileResult.INVALID_STRUCTURE: If the bedfile has an invalid structure.
+            - BEDFileResult.INVALID_VERSION: If the bedfile has an invalid version.
+            - BEDFileResult.VALID: If the bedfile is valid.
+    """
     # Read in the bedfile string
     bedfile_str = bedfile.read_text()
 
@@ -77,14 +105,14 @@ def validate_bedfile(bedfile: pathlib.Path) -> BEDFILERESULT:
     # Check each line
     for line in bedlines:
         if not validate_bedfile_line_structure(line):
-            return BEDFILERESULT.INVALID_STRUCTURE
+            return BEDFileResult.INVALID_STRUCTURE
 
     # Check the bedfile names.
     match determine_bedfile_version(bedfile):
         case BedfileVersion.INVALID:
-            return BEDFILERESULT.INVALID_VERSION
+            return BEDFileResult.INVALID_VERSION
         case _:
-            return BEDFILERESULT.VALID
+            return BEDFileResult.VALID
 
 
 # bedfile versions
