@@ -8,6 +8,7 @@ from typing import Optional
 import typer
 from typing_extensions import Annotated
 
+from primal_page.__init__ import __version__
 from primal_page.bedfiles import (
     BEDFileResult,
     BedfileVersion,
@@ -41,6 +42,21 @@ app.add_typer(
     name="modify",
     help="Modify an existing scheme's metadata (info.json)",
 )
+
+
+def typer_callback_version(value: bool):
+    if value:
+        typer.echo(f"primal-page version: {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def primal_page(
+    value: Annotated[bool, typer.Option] = typer.Option(
+        False, "--version", callback=typer_callback_version
+    )
+):
+    pass
 
 
 def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
