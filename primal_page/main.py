@@ -35,7 +35,7 @@ class FindResult(Enum):
 
 # Create the typer app
 app = typer.Typer()
-modify_app = typer.Typer()
+modify_app = typer.Typer(no_args_is_help=True)
 app.add_typer(
     modify_app,
     name="modify",
