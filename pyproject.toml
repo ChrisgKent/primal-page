@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "primal-page"
-version = "1.5.0"
-description = ""
+version = "1.5.1"
+description = "Tooling and schemas for the primerschemes index"
 authors = ["ChrisKent <chrisgkent@gmail.com>"]
 readme = "README.md"
+repository = "https://github.com/ChrisgKent/primal-page"
 
 [tool.poetry.dependencies]
 python = "^3.10"
