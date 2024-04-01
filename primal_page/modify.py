@@ -26,6 +26,10 @@ def regenerate_readme(path: pathlib.Path, info: Info, pngs: list[pathlib.Path]):
             f"# {info.schemename} {info.ampliconsize}bp {info.schemeversion}\n\n"
         )
 
+        readme.write(
+            f"[primalscheme labs](https://labs.primalscheme.com/detail/{info.schemename}/{info.ampliconsize}/{info.schemeversion})\n\n"
+        )
+
         if info.description is not None:
             readme.write("## Description\n\n")
             readme.write(f"{info.description}\n\n")
