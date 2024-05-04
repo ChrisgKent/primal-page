@@ -42,7 +42,7 @@ def validate_schemename(schemename: str) -> str:
     return schemename
 
 
-def not_empty(x: list | set) -> list | set:
+def not_empty(x: list | set | str) -> list | set | str:
     if len(x) == 0:
         raise ValueError("Cannot be empty")
     return x
@@ -63,6 +63,48 @@ class Collection(Enum):
     MULTI_TARGET = "MULTI-TARGET"
 
 
+class Links(BaseModel):
+    protocals: list[str] = []
+    validation: list[str] = []
+    homepage: list[str] = []
+    vendors: list[str] = []
+    misc: list[str] = []
+
+    def getattr(self, link_type: str):
+        """
+        Get the list of links
+        Raises:
+        -   AttributeError if the link_type is not in the model_fields
+        """
+        return getattr(self, link_type)
+
+    def append_link(
+        self,
+        link_type: str,
+        link: str,
+    ):
+        """
+        Add a link to the correct list
+        Raises:
+        -   AttributeError if the link_type is not in the model_fields
+        """
+        # Append the link to the correct list
+        getattr(self, link_type).append(link)
+
+    def remove_link(
+        self,
+        link_type: str,
+        link: str,
+    ):
+        """
+        Remove a the first occourance of the link from the correct list
+        Raises:
+        -   ValueError if the link is not in the list
+        -   AttributeError if the link_type is not in the model_fields
+        """
+        getattr(self, link_type).remove(link)
+
+
 class Info(BaseModel):
     ampliconsize: PositiveInt
     schemeversion: Annotated[str, AfterValidator(validate_schemeversion)]
@@ -78,10 +120,12 @@ class Info(BaseModel):
     primerclass: PrimerClass = PrimerClass.PRIMERSCHEMES
     infoschema: str = INFO_SCHEMA
     articbedversion: BedfileVersion
+    collections: set[Collection] = set()
+    links: Links = Links()
     # Add the optional fields
     description: str | None = None
     derivedfrom: str | None = None
-    collections: set[Collection] = set()
+    contactinfo: str | None = None
 
     def add_collection(self, collection: Collection):
         """Add a collection to the collections set"""
@@ -165,6 +209,10 @@ class Info(BaseModel):
         """Change the description"""
         self.description = new_description
 
+    def change_contactinfo(self, new_contactinfo: str | None):
+        """Change the contactinfo"""
+        self.contactinfo = new_contactinfo
+
 
 if __name__ == "__main__":
     info = Info(
@@ -177,7 +225,13 @@ if __name__ == "__main__":
         citations=set(),
         authors=["artic"],
         algorithmversion="test",
-        species=set("sars-cov-2"),
+        species=set(["sars-cov-2"]),
         articbedversion=BedfileVersion.V3,
         collections=set(),
+        links=Links(),
     )
+
+    info_json = info.model_dump_json()
+    print(info_json)
+
+    info2 = Info.model_validate_json(info_json)

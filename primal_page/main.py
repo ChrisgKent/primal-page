@@ -1,4 +1,3 @@
-import hashlib
 import json
 import pathlib
 import shutil
@@ -13,15 +12,14 @@ from primal_page.bedfiles import (
     BEDFileResult,
     BedfileVersion,
     determine_bedfile_version,
-    regenerate_v3_bedfile,
     validate_bedfile,
 )
 from primal_page.build_index import create_index
+from primal_page.dev import app as dev_app
 from primal_page.download import app as download_app
 from primal_page.modify import app as modify_app
-from primal_page.modify import regenerate_files, regenerate_readme
+from primal_page.modify import hashfile, regenerate_readme, trim_file_whitespace
 from primal_page.schemas import (
-    INFO_SCHEMA,
     Collection,
     Info,
     PrimerClass,
@@ -46,6 +44,7 @@ app.add_typer(
     name="download",
     help="Download schemes from the index.json",
 )
+app.add_typer(dev_app, name="dev", help="Development commands", hidden=True)
 
 
 def typer_callback_version(value: bool):
@@ -61,26 +60,6 @@ def primal_page(
     ),
 ):
     pass
-
-
-def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
-    """
-    Trim whitespace from the ends of a file.
-        - Reads file into memory. Not suitable for large files
-    """
-    with open(in_path) as infile:
-        input_file = infile.read().strip()
-
-    with open(out_path, "w") as outfile:
-        outfile.write(input_file)
-
-
-def hashfile(fname: pathlib.Path) -> str:
-    hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
 
 
 def find_ref(
@@ -465,118 +444,6 @@ def remove(
     scheme_dir = size_dir.parent
     if len(list(scheme_dir.iterdir())) == 0:
         scheme_dir.rmdir()
-
-
-@app.command()
-def regenerate(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-):
-    """
-    Regenerate the info.json and README.md file for a scheme
-        - Rehashes info.json's primer_bed_md5 and reference_fasta_md5
-        - Regenerates the README.md file
-        - Recalculate the artic-primerbed version
-        - Updates the infoschema version to current
-
-    Ensures work/config.json has no absolute paths
-        - Ensures hashes in config.json are removed
-    """
-    # Check that this is an info.json file (for safety)
-    if schemeinfo.name != "info.json":
-        raise typer.BadParameter(f"{schemeinfo} is not an info.json file")
-
-    # Get the scheme path
-    scheme_path = schemeinfo.parent
-
-    # Get the info
-    info_json = json.load(schemeinfo.open())
-
-    # Trim whitespace from primer.bed and reference.fasta
-    trim_file_whitespace(scheme_path / "primer.bed", scheme_path / "primer.bed")
-    trim_file_whitespace(
-        scheme_path / "reference.fasta", scheme_path / "reference.fasta"
-    )
-
-    # if articbedversion not set then set it
-    articbedversion = determine_bedfile_version(scheme_path / "primer.bed")
-    if articbedversion == BedfileVersion.INVALID:
-        raise typer.BadParameter(
-            f"Could not determine artic-primerbed version for {scheme_path / 'primer.bed'}"
-        )
-    info_json["articbedversion"] = articbedversion.value
-
-    # Regenerate the files hashes
-    info_json["primer_bed_md5"] = hashfile(scheme_path / "primer.bed")
-    info_json["reference_fasta_md5"] = hashfile(scheme_path / "reference.fasta")
-
-    info = Info(**info_json)
-    info.infoschema = INFO_SCHEMA
-
-    #####################################
-    # Final validation and create files #
-    #####################################
-
-    regenerate_files(info, schemeinfo)
-
-
-@app.command()
-def download_all(
-    output: Annotated[
-        pathlib.Path,
-        typer.Option(help="The directory the primerschemes dir will be created in"),
-    ],
-    index_url: Annotated[
-        str, typer.Option(help="The URL to the index.json")
-    ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
-):
-    """Download all schemes from the index.json"""
-    # Fetch the index and store in memory
-    index = fetch_index(index_url)
-
-    # Create the output directory
-    output_primerschemes = output / "primerschemes"
-    output_primerschemes.mkdir(exist_ok=True)
-
-    download_all_func(output=output, index=index)
-
-
-@app.command()
-def download_scheme(
-    schemename: Annotated[
-        str,
-        typer.Argument(help="The name of the scheme", callback=validate_schemename),
-    ],
-    ampliconsize: Annotated[int, typer.Argument(help="Amplicon size")],
-    schemeversion: Annotated[
-        str, typer.Argument(help="Scheme version", callback=validate_schemeversion)
-    ],
-    output: Annotated[
-        pathlib.Path,
-        typer.Option(help="The directory the primerschemes dir will be created in"),
-    ],
-    index_url: Annotated[
-        str, typer.Option(help="The URL to the index.json")
-    ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
-):
-    """Download a scheme from the index.json"""
-
-    # Fetch the index and store in memory
-    index = fetch_index(index_url)
-
-    # Create the output directory
-    output_primerschemes = output / "primerschemes"
-    output_primerschemes.mkdir(exist_ok=True)
-
-    download_scheme_func(
-        output_dir=output_primerschemes,
-        index=index,
-        schemename=schemename,
-        ampliconsize=str(ampliconsize),
-        schemeversion=schemeversion,
-    )
 
 
 if __name__ == "__main__":

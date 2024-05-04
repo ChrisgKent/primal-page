@@ -1,3 +1,4 @@
+import hashlib
 import pathlib
 from typing import Optional
 
@@ -18,7 +19,27 @@ This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 Inter
 
 ![](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)"""
 
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
+
+
+def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
+    """
+    Trim whitespace from the ends of a file.
+        - Reads file into memory. Not suitable for large files
+    """
+    with open(in_path) as infile:
+        input_file = infile.read().strip()
+
+    with open(out_path, "w") as outfile:
+        outfile.write(input_file)
+
+
+def hashfile(fname: pathlib.Path) -> str:
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 
 def regenerate_readme(path: pathlib.Path, info: Info, pngs: list[pathlib.Path]):
@@ -148,7 +169,9 @@ def remove_link(
 def add_author(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     author: Annotated[str, typer.Argument(help="The author to add")],
     author_index: Annotated[
@@ -172,7 +195,9 @@ def add_author(
 def remove_author(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     author: Annotated[str, typer.Argument(help="The author to remove")],
 ):
@@ -192,7 +217,9 @@ def remove_author(
 def reorder_authors(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     author_index: Annotated[
         Optional[str],
@@ -235,7 +262,9 @@ def reorder_authors(
 def add_citation(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     citation: Annotated[str, typer.Argument(help="The citation to add")],
 ):
@@ -253,7 +282,9 @@ def add_citation(
 def remove_citation(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     citation: Annotated[str, typer.Argument(help="The citation to remove")],
 ):
@@ -273,7 +304,9 @@ def remove_citation(
 def remove_collection(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     collection: Annotated[Collection, typer.Argument(help="The Collection to remove")],
 ):
@@ -294,7 +327,9 @@ def remove_collection(
 def add_collection(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     collection: Annotated[Collection, typer.Argument(help="The Collection to add")],
 ):
@@ -308,10 +343,12 @@ def add_collection(
 
 
 @app.command()
-def description(
+def change_description(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     description: Annotated[
         str,
@@ -331,10 +368,12 @@ def description(
 
 
 @app.command()
-def derivedfrom(
+def change_derivedfrom(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     derivedfrom: Annotated[
         str,
@@ -354,7 +393,7 @@ def derivedfrom(
 
 
 @app.command()
-def license(
+def change_license(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -379,14 +418,16 @@ def license(
 
 
 @app.command()
-def status(
+def change_status(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     schemestatus: Annotated[
         SchemeStatus,
-        typer.Option(
+        typer.Argument(
             help="The scheme class",
         ),
     ] = SchemeStatus.DRAFT,
@@ -403,10 +444,12 @@ def status(
 
 
 @app.command()
-def primerclass(
+def change_primerclass(
     schemeinfo: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
     ],
     primerclass: Annotated[
         PrimerClass, typer.Argument(help="The primerclass to change to")
@@ -418,6 +461,31 @@ def primerclass(
 
     # Change the primerclass
     info.change_primerclass(primerclass)
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def change_contactinfo(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
+    ],
+    contactinfo: Annotated[
+        Optional[str],
+        typer.Argument(
+            help="The contact infomation for this scheme. Use 'None' to remove the contact info",
+        ),
+    ],
+):
+    """Change the contactinfo field in the info.json"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Change the contactinfo
+    info.change_contactinfo(contactinfo)
 
     # Write the validated info.json and regenerate the README
     regenerate_files(info, schemeinfo)
