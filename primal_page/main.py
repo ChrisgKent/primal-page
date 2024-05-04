@@ -13,10 +13,12 @@ from primal_page.bedfiles import (
     BEDFileResult,
     BedfileVersion,
     determine_bedfile_version,
+    regenerate_v3_bedfile,
     validate_bedfile,
 )
 from primal_page.build_index import create_index
-from primal_page.download import download_all_func, download_scheme_func, fetch_index
+from primal_page.download import app as download_app
+from primal_page.modify import app as modify_app
 from primal_page.modify import regenerate_files, regenerate_readme
 from primal_page.schemas import (
     INFO_SCHEMA,
@@ -24,8 +26,6 @@ from primal_page.schemas import (
     Info,
     PrimerClass,
     SchemeStatus,
-    validate_schemename,
-    validate_schemeversion,
 )
 
 
@@ -36,11 +36,15 @@ class FindResult(Enum):
 
 # Create the typer app
 app = typer.Typer(no_args_is_help=True)
-modify_app = typer.Typer(no_args_is_help=True)
 app.add_typer(
     modify_app,
     name="modify",
     help="Modify an existing scheme's metadata (info.json)",
+)
+app.add_typer(
+    download_app,
+    name="download",
+    help="Download schemes from the index.json",
 )
 
 
@@ -54,7 +58,7 @@ def typer_callback_version(value: bool):
 def primal_page(
     value: Annotated[bool, typer.Option] = typer.Option(
         False, "--version", callback=typer_callback_version
-    )
+    ),
 ):
     pass
 
@@ -410,297 +414,6 @@ def create(
         # Cleanup
         shutil.rmtree(repo_dir)
         raise typer.BadParameter(f"{e}\nCleaning up {repo_dir}") from None
-
-
-@modify_app.command()
-def status(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    schemestatus: Annotated[
-        SchemeStatus,
-        typer.Option(
-            help="The scheme class",
-        ),
-    ] = SchemeStatus.DRAFT,
-):
-    """Change the status field in the info.json"""
-
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    # Change the status
-    info.change_status(schemestatus)
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def primerclass(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    primerclass: Annotated[
-        PrimerClass, typer.Argument(help="The primerclass to change to")
-    ],
-):
-    """Change the primerclass field in the info.json"""
-
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    # Change the primerclass
-    info.change_primerclass(primerclass)
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def add_author(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    author: Annotated[str, typer.Argument(help="The author to add")],
-    author_index: Annotated[
-        Optional[int],
-        typer.Option(
-            help="The 0-based index to insert the author at. Default is the end"
-        ),
-    ],
-):
-    """Append an author to the authors list in the info.json file"""
-
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    info.add_author(author, author_index)
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def remove_author(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    author: Annotated[str, typer.Argument(help="The author to remove")],
-):
-    """Remove an author from the authors list in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    try:
-        info.remove_author(author)
-    except KeyError:
-        raise typer.BadParameter(f"{author} is already not present") from None
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def reorder_authors(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    author_index: Annotated[
-        Optional[str],
-        typer.Argument(
-            help="The indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end"
-        ),
-    ] = None,
-):
-    """Reorder the authors in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    # Reorder interactively
-    if author_index is None:
-        # Current order
-        typer.echo("Current order:")
-        for index, author in enumerate(info.authors):
-            typer.echo(f"{index}: {author}")
-
-        # Get the new order
-        new_order_str: str = typer.prompt(
-            "Please provide the indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end",
-            type=str,
-        )
-        new_order = [int(x) for x in new_order_str.split()]
-    else:  # Reorder via cli
-        new_order = [int(x) for x in author_index.split()]
-
-    try:
-        info.reorder_authors(new_order)
-    except ValueError as e:
-        raise typer.BadParameter(f"{e}") from None
-    except IndexError as e:
-        raise typer.BadParameter(f"{e}") from None
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def add_citation(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    citation: Annotated[str, typer.Argument(help="The citation to add")],
-):
-    """Append an citation to the authors list in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    # Add the citation
-    info.add_citation(citation)
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def remove_citation(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    citation: Annotated[str, typer.Argument(help="The citation to remove")],
-):
-    """Remove an citation form the authors list in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    try:
-        info.remove_citation(citation)
-    except KeyError:
-        raise typer.BadParameter(f"{citation} is already not present") from None
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def remove_collection(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    collection: Annotated[Collection, typer.Argument(help="The Collection to remove")],
-):
-    """Remove an Collection from the Collection list in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    # Check if collection is already not in the list
-    try:
-        info.remove_collection(collection)
-    except KeyError:
-        raise typer.BadParameter(f"{collection} is already not present") from None
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def add_collection(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    collection: Annotated[Collection, typer.Argument(help="The Collection to add")],
-):
-    """Add a Collection to the Collection list in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    info.add_collection(collection)
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def description(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    description: Annotated[
-        str,
-        typer.Argument(
-            help="The new description. Use 'None' to remove the description"
-        ),
-    ],
-):
-    """Replaces the description in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    # Change the description
-    info.change_description(description.strip())
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def derivedfrom(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to info.json", readable=True, exists=True),
-    ],
-    derivedfrom: Annotated[
-        str,
-        typer.Argument(
-            help="The new derivedfrom. Use 'None' to remove the derivedfrom"
-        ),
-    ],
-):
-    """Replaces the derivedfrom in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    # Add the derivedfrom
-    info.change_derivedfrom(derivedfrom.strip())
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
-
-
-@modify_app.command()
-def license(
-    schemeinfo: Annotated[
-        pathlib.Path,
-        typer.Argument(
-            help="The path to info.json", readable=True, exists=True, writable=True
-        ),
-    ],
-    license: Annotated[
-        str,
-        typer.Argument(
-            help="The new license. Use 'None' show the work is not licensed (Not recommended)"
-        ),
-    ],
-):
-    """Replaces the license in the info.json file"""
-    info = json.load(schemeinfo.open())
-    info = Info(**info)
-
-    # Change the license
-    info.change_license(license)
-
-    # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
 
 
 @app.command()

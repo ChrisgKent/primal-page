@@ -1,12 +1,24 @@
 import pathlib
+from typing import Optional
 
-from primal_page.schemas import Info
+import typer
+from typing_extensions import Annotated
+
+from primal_page.schemas import (
+    Collection,
+    Info,
+    Links,
+    PrimerClass,
+    SchemeStatus,
+)
 
 LICENSE_TXT_CC_BY_SA_4_0 = """\n\n------------------------------------------------------------------------
 
 This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/) 
 
 ![](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)"""
+
+app = typer.Typer()
 
 
 def regenerate_readme(path: pathlib.Path, info: Info, pngs: list[pathlib.Path]):
@@ -56,3 +68,356 @@ def regenerate_files(info: Info, schemeinfo: pathlib.Path):
     scheme_path = schemeinfo.parent
     pngs = [path for path in scheme_path.rglob("*.png")]
     regenerate_readme(scheme_path, info, pngs)
+
+
+@app.command()
+def add_link(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
+    ],
+    linkfield: Annotated[
+        str,
+        typer.Argument(
+            help=f"The link field to add to. {', '.join(Links.model_fields.keys())}"
+        ),
+    ],
+    link: Annotated[
+        str,
+        typer.Argument(help="The link to add."),
+    ],
+):
+    """
+    Add a link to the selected link field to the info.json
+    """
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    try:
+        info.links.append_link(linkfield, link)
+    except AttributeError:
+        raise typer.BadParameter(
+            f"{linkfield} is not a valid link field. Please choose from {', '.join(Links.model_fields.keys())}"
+        ) from None
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def remove_link(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
+    ],
+    linkfield: Annotated[
+        str,
+        typer.Argument(
+            help=f"The link field to remove from. {', '.join(Links.model_fields.keys())}"
+        ),
+    ],
+    link: Annotated[
+        str,
+        typer.Argument(help="The link to remove."),
+    ],
+):
+    """
+    Add a link to the selected link field to the info.json
+    """
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    try:
+        info.links.remove_link(linkfield, link)
+    except AttributeError:
+        raise typer.BadParameter(
+            f"{linkfield} is not a valid link field. Please choose from {', '.join(Links.model_fields.keys())}"
+        ) from None
+    except ValueError:
+        raise typer.BadParameter(
+            f"{link} is not in links[{linkfield}]: {info.links.getattr(linkfield)}"
+        ) from None
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def add_author(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    author: Annotated[str, typer.Argument(help="The author to add")],
+    author_index: Annotated[
+        Optional[int],
+        typer.Option(
+            help="The 0-based index to insert the author at. Default is the end"
+        ),
+    ],
+):
+    """Append an author to the authors list in the info.json file"""
+
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    info.add_author(author, author_index)
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def remove_author(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    author: Annotated[str, typer.Argument(help="The author to remove")],
+):
+    """Remove an author from the authors list in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    try:
+        info.remove_author(author)
+    except KeyError:
+        raise typer.BadParameter(f"{author} is already not present") from None
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def reorder_authors(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    author_index: Annotated[
+        Optional[str],
+        typer.Argument(
+            help="The indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end"
+        ),
+    ] = None,
+):
+    """Reorder the authors in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Reorder interactively
+    if author_index is None:
+        # Current order
+        typer.echo("Current order:")
+        for index, author in enumerate(info.authors):
+            typer.echo(f"{index}: {author}")
+
+        # Get the new order
+        new_order_str: str = typer.prompt(
+            "Please provide the indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end",
+            type=str,
+        )
+        new_order = [int(x) for x in new_order_str.split()]
+    else:  # Reorder via cli
+        new_order = [int(x) for x in author_index.split()]
+
+    try:
+        info.reorder_authors(new_order)
+    except ValueError as e:
+        raise typer.BadParameter(f"{e}") from None
+    except IndexError as e:
+        raise typer.BadParameter(f"{e}") from None
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def add_citation(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    citation: Annotated[str, typer.Argument(help="The citation to add")],
+):
+    """Append an citation to the authors list in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Add the citation
+    info.add_citation(citation)
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def remove_citation(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    citation: Annotated[str, typer.Argument(help="The citation to remove")],
+):
+    """Remove an citation form the authors list in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_bytes())
+
+    try:
+        info.remove_citation(citation)
+    except KeyError:
+        raise typer.BadParameter(f"{citation} is already not present") from None
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def remove_collection(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    collection: Annotated[Collection, typer.Argument(help="The Collection to remove")],
+):
+    """Remove an Collection from the Collection list in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Check if collection is already not in the list
+    try:
+        info.remove_collection(collection)
+    except KeyError:
+        raise typer.BadParameter(f"{collection} is already not present") from None
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def add_collection(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    collection: Annotated[Collection, typer.Argument(help="The Collection to add")],
+):
+    """Add a Collection to the Collection list in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    info.add_collection(collection)
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def description(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    description: Annotated[
+        str,
+        typer.Argument(
+            help="The new description. Use 'None' to remove the description"
+        ),
+    ],
+):
+    """Replaces the description in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Change the description
+    info.change_description(description.strip())
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def derivedfrom(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    derivedfrom: Annotated[
+        str,
+        typer.Argument(
+            help="The new derivedfrom. Use 'None' to remove the derivedfrom"
+        ),
+    ],
+):
+    """Replaces the derivedfrom in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Add the derivedfrom
+    info.change_derivedfrom(derivedfrom.strip())
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def license(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
+    ],
+    license: Annotated[
+        str,
+        typer.Argument(
+            help="The new license. Use 'None' show the work is not licensed (Not recommended)"
+        ),
+    ],
+):
+    """Replaces the license in the info.json file"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Change the license
+    info.change_license(license)
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def status(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    schemestatus: Annotated[
+        SchemeStatus,
+        typer.Option(
+            help="The scheme class",
+        ),
+    ] = SchemeStatus.DRAFT,
+):
+    """Change the status field in the info.json"""
+
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Change the status
+    info.change_status(schemestatus)
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)
+
+
+@app.command()
+def primerclass(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(help="The path to info.json", readable=True, exists=True),
+    ],
+    primerclass: Annotated[
+        PrimerClass, typer.Argument(help="The primerclass to change to")
+    ],
+):
+    """Change the primerclass field in the info.json"""
+
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Change the primerclass
+    info.change_primerclass(primerclass)
+
+    # Write the validated info.json and regenerate the README
+    regenerate_files(info, schemeinfo)

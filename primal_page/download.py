@@ -3,6 +3,12 @@ import json
 import pathlib
 
 import requests
+import typer
+from typing_extensions import Annotated
+
+from primal_page.schemas import validate_schemename, validate_schemeversion
+
+app = typer.Typer(no_args_is_help=True)
 
 
 def validate_hashes(input_text: str, expected_hash: str, output_file: pathlib.Path):
@@ -99,3 +105,60 @@ def download_all_func(index: dict, output: pathlib.Path):
                 download_scheme_func(
                     schemename, ampliconsize, schemeversion, index, output
                 )
+
+
+@app.command()
+def download_all(
+    output: Annotated[
+        pathlib.Path,
+        typer.Option(help="The directory the primerschemes dir will be created in"),
+    ],
+    index_url: Annotated[
+        str, typer.Option(help="The URL to the index.json")
+    ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
+):
+    """Download all schemes from the index.json"""
+    # Fetch the index and store in memory
+    index = fetch_index(index_url)
+
+    # Create the output directory
+    output_primerschemes = output / "primerschemes"
+    output_primerschemes.mkdir(exist_ok=True)
+
+    download_all_func(output=output, index=index)
+
+
+@app.command()
+def download_scheme(
+    schemename: Annotated[
+        str,
+        typer.Argument(help="The name of the scheme", callback=validate_schemename),
+    ],
+    ampliconsize: Annotated[int, typer.Argument(help="Amplicon size")],
+    schemeversion: Annotated[
+        str, typer.Argument(help="Scheme version", callback=validate_schemeversion)
+    ],
+    output: Annotated[
+        pathlib.Path,
+        typer.Option(help="The directory the primerschemes dir will be created in"),
+    ],
+    index_url: Annotated[
+        str, typer.Option(help="The URL to the index.json")
+    ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
+):
+    """Download a scheme from the index.json"""
+
+    # Fetch the index and store in memory
+    index = fetch_index(index_url)
+
+    # Create the output directory
+    output_primerschemes = output / "primerschemes"
+    output_primerschemes.mkdir(exist_ok=True)
+
+    download_scheme_func(
+        output_dir=output_primerschemes,
+        index=index,
+        schemename=schemename,
+        ampliconsize=str(ampliconsize),
+        schemeversion=schemeversion,
+    )
