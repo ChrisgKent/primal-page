@@ -161,15 +161,15 @@ def create(
     ],
     schemename: Annotated[
         str,
-        typer.Argument(help="The name of the scheme"),
+        typer.Option(help="The name of the scheme"),
     ],
     ampliconsize: Annotated[
         int,
-        typer.Argument(help="Amplicon size", min=100),
+        typer.Option(help="Amplicon size", min=100),
     ],
     schemeversion: Annotated[
         str,
-        typer.Argument(
+        typer.Option(
             help="Scheme version, default is parsed from config.json",
         ),
     ],
@@ -226,19 +226,19 @@ def create(
     collection: Annotated[
         Optional[list[Collection]], typer.Option(help="The collection")
     ] = None,
-    links_protocals: Annotated[
+    link_protocal: Annotated[
         list[str], typer.Option(help="Optional link to protocol")
     ] = [],
-    links_validation: Annotated[
+    link_validation: Annotated[
         list[str], typer.Option(help="Optional link to validation data")
     ] = [],
     links_homepage: Annotated[
         list[str], typer.Option(help="Optional link to homepage")
     ] = [],
-    links_vendors: Annotated[
+    link_vendor: Annotated[
         list[str], typer.Option(help="Optional link to vendors")
     ] = [],
-    links_misc: Annotated[
+    link_misc: Annotated[
         list[str], typer.Option(help="Optional miscellaneous link")
     ] = [],
 ):
@@ -296,7 +296,7 @@ def create(
 
     elif status == FindResult.NOT_FOUND:
         if algorithmversion is None:
-            raise FileNotFoundError(
+            raise typer.BadParameter(
                 f"Could not find a config.json file in {schemepath}. Please specify manually with --configpath or specify algorithmversion with --algorithmversion"
             )
 
@@ -336,11 +336,11 @@ def create(
 
     # Create the links set
     links = Links(
-        protocals=links_protocals,
-        validation=links_validation,
+        protocals=link_protocal,
+        validation=link_validation,
         homepage=links_homepage,
-        vendors=links_vendors,
-        misc=links_misc,
+        vendors=link_vendor,
+        misc=link_misc,
     )
     # Create the info.json
     # Generate the md5s
