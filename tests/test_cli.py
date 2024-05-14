@@ -1,5 +1,3 @@
-import pathlib
-
 from typer.testing import CliRunner
 
 from primal_page.__init__ import __version__
