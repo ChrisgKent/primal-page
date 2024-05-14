@@ -296,7 +296,7 @@ def create(
 
     elif status == FindResult.NOT_FOUND:
         if algorithmversion is None:
-            raise typer.BadParameter(
+            raise FileNotFoundError(
                 f"Could not find a config.json file in {schemepath}. Please specify manually with --configpath or specify algorithmversion with --algorithmversion"
             )
 
