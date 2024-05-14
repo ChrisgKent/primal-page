@@ -201,7 +201,7 @@ Regex:
 
 # CLI
 
-# Examples# `primal-page`
+# `primal-page`
 
 **Usage**:
 
@@ -285,6 +285,484 @@ $ primal-page create [OPTIONS] SCHEMEPATH
 **Options**:
 
 * `--help`: Show this message and exit.
+
+## `primal-page download`
+
+Download schemes from the index.json
+
+**Usage**:
+
+```console
+$ primal-page download [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `download-all`: Download all schemes from the index.json
+* `download-scheme`: Download a scheme from the index.json
+
+### `primal-page download download-all`
+
+Download all schemes from the index.json
+
+**Usage**:
+
+```console
+$ primal-page download download-all [OPTIONS]
+```
+
+**Options**:
+
+* `--output PATH`: The directory the primerschemes dir will be created in  [required]
+* `--index-url TEXT`: The URL to the index.json  [default: https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json]
+* `--help`: Show this message and exit.
+
+### `primal-page download download-scheme`
+
+Download a scheme from the index.json
+
+**Usage**:
+
+```console
+$ primal-page download download-scheme [OPTIONS] SCHEMENAME AMPLICONSIZE SCHEMEVERSION
+```
+
+**Arguments**:
+
+* `SCHEMENAME`: The name of the scheme  [required]
+* `AMPLICONSIZE`: Amplicon size  [required]
+* `SCHEMEVERSION`: Scheme version  [required]
+
+**Options**:
+
+* `--output PATH`: The directory the primerschemes dir will be created in  [required]
+* `--index-url TEXT`: The URL to the index.json  [default: https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json]
+* `--help`: Show this message and exit.
+
+## `primal-page modify`
+
+Modify an existing scheme's metadata (info.json)
+
+**Usage**:
+
+```console
+$ primal-page modify [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `add-author`: Append an author to the authors list in...
+* `add-citation`: Append an citation to the authors list in...
+* `add-collection`: Add a Collection to the Collection list in...
+* `add-link`: Add a link to the selected link field to...
+* `change-contactinfo`: Change the contactinfo field in the info.json
+* `change-derivedfrom`: Replaces the derivedfrom in the info.json...
+* `change-description`: Replaces the description in the info.json...
+* `change-license`: Replaces the license in the info.json file
+* `change-primerclass`: Change the primerclass field in the info.json
+* `change-status`: Change the status field in the info.json
+* `remove-author`: Remove an author from the authors list in...
+* `remove-citation`: Remove an citation form the authors list...
+* `remove-collection`: Remove an Collection from the Collection...
+* `remove-link`: Add a link to the selected link field to...
+* `reorder-authors`: Reorder the authors in the info.json file
+
+### `primal-page modify add-author`
+
+Append an author to the authors list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify add-author [OPTIONS] SCHEMEINFO AUTHOR
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `AUTHOR`: The author to add  [required]
+
+**Options**:
+
+* `--author-index INTEGER`: The 0-based index to insert the author at. Default is the end  [required]
+* `--help`: Show this message and exit.
+
+### `primal-page modify add-citation`
+
+Append an citation to the authors list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify add-citation [OPTIONS] SCHEMEINFO CITATION
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `CITATION`: The citation to add  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify add-collection`
+
+Add a Collection to the Collection list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify add-collection [OPTIONS] SCHEMEINFO COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET}
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET}`: The Collection to add  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify add-link`
+
+Add a link to the selected link field to the info.json
+
+**Usage**:
+
+```console
+$ primal-page modify add-link [OPTIONS] SCHEMEINFO LINKFIELD LINK
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `LINKFIELD`: The link field to add to. protocals, validation, homepage, vendors, misc  [required]
+* `LINK`: The link to add.  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify change-contactinfo`
+
+Change the contactinfo field in the info.json
+
+**Usage**:
+
+```console
+$ primal-page modify change-contactinfo [OPTIONS] SCHEMEINFO CONTACTINFO
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `CONTACTINFO`: The contact infomation for this scheme. Use 'None' to remove the contact info  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify change-derivedfrom`
+
+Replaces the derivedfrom in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify change-derivedfrom [OPTIONS] SCHEMEINFO DERIVEDFROM
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `DERIVEDFROM`: The new derivedfrom. Use 'None' to remove the derivedfrom  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify change-description`
+
+Replaces the description in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify change-description [OPTIONS] SCHEMEINFO DESCRIPTION
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `DESCRIPTION`: The new description. Use 'None' to remove the description  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify change-license`
+
+Replaces the license in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify change-license [OPTIONS] SCHEMEINFO LICENSE
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `LICENSE`: The new license. Use 'None' show the work is not licensed (Not recommended)  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify change-primerclass`
+
+Change the primerclass field in the info.json
+
+**Usage**:
+
+```console
+$ primal-page modify change-primerclass [OPTIONS] SCHEMEINFO PRIMERCLASS:{primerschemes}
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `PRIMERCLASS:{primerschemes}`: The primerclass to change to  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify change-status`
+
+Change the status field in the info.json
+
+**Usage**:
+
+```console
+$ primal-page modify change-status [OPTIONS] SCHEMEINFO [SCHEMESTATUS]:[withdrawn|deprecated|autogenerated|draft|tested|validated]
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `[SCHEMESTATUS]:[withdrawn|deprecated|autogenerated|draft|tested|validated]`: The scheme class  [default: SchemeStatus.DRAFT]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify remove-author`
+
+Remove an author from the authors list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify remove-author [OPTIONS] SCHEMEINFO AUTHOR
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `AUTHOR`: The author to remove  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify remove-citation`
+
+Remove an citation form the authors list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify remove-citation [OPTIONS] SCHEMEINFO CITATION
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `CITATION`: The citation to remove  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify remove-collection`
+
+Remove an Collection from the Collection list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify remove-collection [OPTIONS] SCHEMEINFO COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET}
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET}`: The Collection to remove  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify remove-link`
+
+Add a link to the selected link field to the info.json
+
+**Usage**:
+
+```console
+$ primal-page modify remove-link [OPTIONS] SCHEMEINFO LINKFIELD LINK
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `LINKFIELD`: The link field to remove from. protocals, validation, homepage, vendors, misc  [required]
+* `LINK`: The link to remove.  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify reorder-authors`
+
+Reorder the authors in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify reorder-authors [OPTIONS] SCHEMEINFO [AUTHOR_INDEX]
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `[AUTHOR_INDEX]`: The indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+## `primal-page remove`
+
+Remove a scheme's version from the repo, will also remove size and schemename directories if empty
+
+**Usage**:
+
+```console
+$ primal-page remove [OPTIONS] SCHEMEINFO
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+# `primal-page`
+
+**Usage**:
+
+```console
+$ primal-page [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--version`
+* `--install-completion`: Install completion for the current shell.
+* `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `build-index`: Build an index.json file from all schemes...
+* `create`: Create a new scheme in the required format
+* `dev`: Development commands
+* `download`: Download schemes from the index.json
+* `modify`: Modify an existing scheme's metadata...
+* `remove`: Remove a scheme's version from the repo,...
+
+## `primal-page build-index`
+
+Build an index.json file from all schemes in the directory
+
+**Usage**:
+
+```console
+$ primal-page build-index [OPTIONS]
+```
+
+**Options**:
+
+* `--gitaccount TEXT`: The name of the github account  [default: quick-lab]
+* `--gitserver TEXT`: The name of the github server  [default: https://github.com/]
+* `--parentdir PATH`: The parent directory  [default: .]
+* `--git-commit-sha TEXT`: The git commit
+* `--force / --no-force`: Force the creation of the index.json  [default: no-force]
+* `--help`: Show this message and exit.
+
+## `primal-page create`
+
+Create a new scheme in the required format
+
+**Usage**:
+
+```console
+$ primal-page create [OPTIONS] SCHEMEPATH SCHEMENAME AMPLICONSIZE SCHEMEVERSION
+```
+
+**Arguments**:
+
+* `SCHEMEPATH`: The path to the primerscheme directory  [required]
+* `SCHEMENAME`: The name of the scheme  [required]
+* `AMPLICONSIZE`: Amplicon size  [required]
+* `SCHEMEVERSION`: Scheme version, default is parsed from config.json  [required]
+
+**Options**:
+
+* `--species INTEGER`: The species this scheme targets. Please use NCBI taxonomy ids  [required]
+* `--authors TEXT`: Any authors  [required]
+* `--schemestatus [withdrawn|deprecated|autogenerated|draft|tested|validated]`: Scheme status  [default: draft]
+* `--citations TEXT`: Any associated citations. Please use DOI
+* `--primerbed PATH`: Manually specify the primer bed file, default is *primer.bed
+* `--reference PATH`: Manually specify the referance.fasta file, default is *.fasta
+* `--output PATH`: Where to output the scheme  [default: primerschemes]
+* `--configpath PATH`: Where the config.json file is located
+* `--algorithmversion TEXT`: The version of primalscheme or other
+* `--description TEXT`: A description of the scheme
+* `--derivedfrom TEXT`: Which scheme has this scheme been derived from
+* `--primerclass [primerschemes]`: The primer class  [default: primerschemes]
+* `--collection [ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET]`: The collection
+* `--links-protocals TEXT`: Optional link to protocol
+* `--links-validation TEXT`: Optional link to validation data
+* `--links-homepage TEXT`: Optional link to homepage
+* `--links-vendors TEXT`: Optional link to vendors
+* `--links-misc TEXT`: Optional miscellaneous link
+* `--help`: Show this message and exit.
+
 
 ## `primal-page download`
 

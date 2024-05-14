@@ -19,12 +19,7 @@ from primal_page.dev import app as dev_app
 from primal_page.download import app as download_app
 from primal_page.modify import app as modify_app
 from primal_page.modify import hashfile, regenerate_readme, trim_file_whitespace
-from primal_page.schemas import (
-    Collection,
-    Info,
-    PrimerClass,
-    SchemeStatus,
-)
+from primal_page.schemas import Collection, Info, Links, PrimerClass, SchemeStatus
 
 
 class FindResult(Enum):
@@ -162,19 +157,19 @@ def find_config(
 def create(
     schemepath: Annotated[
         pathlib.Path,
-        typer.Argument(help="The path to the scheme directory", readable=True),
+        typer.Argument(help="The path to the primerscheme directory", readable=True),
     ],
     schemename: Annotated[
         str,
-        typer.Option(help="The name of the scheme"),
+        typer.Argument(help="The name of the scheme"),
     ],
     ampliconsize: Annotated[
         int,
-        typer.Option(help="Amplicon size", min=100),
+        typer.Argument(help="Amplicon size", min=100),
     ],
     schemeversion: Annotated[
         str,
-        typer.Option(
+        typer.Argument(
             help="Scheme version, default is parsed from config.json",
         ),
     ],
@@ -231,6 +226,21 @@ def create(
     collection: Annotated[
         Optional[list[Collection]], typer.Option(help="The collection")
     ] = None,
+    links_protocals: Annotated[
+        list[str], typer.Option(help="Optional link to protocol")
+    ] = [],
+    links_validation: Annotated[
+        list[str], typer.Option(help="Optional link to validation data")
+    ] = [],
+    links_homepage: Annotated[
+        list[str], typer.Option(help="Optional link to homepage")
+    ] = [],
+    links_vendors: Annotated[
+        list[str], typer.Option(help="Optional link to vendors")
+    ] = [],
+    links_misc: Annotated[
+        list[str], typer.Option(help="Optional miscellaneous link")
+    ] = [],
 ):
     """Create a new scheme in the required format"""
 
@@ -324,6 +334,14 @@ def create(
     # Create the collections set
     collections = {x for x in collection} if collection is not None else set()
 
+    # Create the links set
+    links = Links(
+        protocals=links_protocals,
+        validation=links_validation,
+        homepage=links_homepage,
+        vendors=links_vendors,
+        misc=links_misc,
+    )
     # Create the info.json
     # Generate the md5s
     info = Info(
@@ -342,6 +360,7 @@ def create(
         primerclass=primerclass,
         articbedversion=primerbed_version,
         collections=collections,
+        links=links,
     )
 
     #####################################
@@ -397,7 +416,7 @@ def create(
     except Exception as e:
         # Cleanup
         shutil.rmtree(repo_dir)
-        raise typer.BadParameter(f"{e}\nCleaning up {repo_dir}") from None
+        raise typer.BadParameter(f"{e}\nCleaning up {repo_dir}") from e
 
 
 @app.command()
