@@ -254,6 +254,11 @@ def create(
     # Get primerbed version
     primerbed_version: BedfileVersion = determine_bedfile_version(valid_primer_bed)
 
+    if primerbed_version != BedfileVersion.V3:
+        raise typer.BadParameter(
+            f"Primerbed version {primerbed_version.value} is not supported. Please use a v3.0 bedfile"
+        )
+
     # Find the reference.fasta file
     valid_ref = find_ref(reference, found_files, schemepath)
 

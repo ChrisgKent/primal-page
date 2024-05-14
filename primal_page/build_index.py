@@ -232,7 +232,7 @@ def create_index(
         )
 
     with open(parent_dir / "index.json", "w") as f:
-        json.dump(json_dict, f, indent=4, sort_keys=True)
+        json.dump(json_dict, f, indent=1, sort_keys=True)
 
     return True
 

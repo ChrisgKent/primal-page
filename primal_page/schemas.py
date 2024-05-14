@@ -7,10 +7,11 @@ from pydantic.functional_validators import AfterValidator
 
 from primal_page.bedfiles import BedfileVersion
 
-INFO_SCHEMA = "v1.3.0"
+INFO_SCHEMA = "v2.0.0"
 
 SCHEMENAME_PATTERN = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"
+DOI_PATTERN = r"^(https:\/\/|dx.)*(doi.org\/|doi:)10.\d+\/.*$"
 
 
 class PrimerClass(Enum):

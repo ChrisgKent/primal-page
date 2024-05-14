@@ -27,11 +27,13 @@ def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
     Trim whitespace from the ends of a file.
         - Reads file into memory. Not suitable for large files
     """
+    inlines = []
     with open(in_path) as infile:
-        input_file = infile.read().strip()
+        for line in infile:
+            inlines.append(line.strip() + "\n")
 
     with open(out_path, "w") as outfile:
-        outfile.write(input_file)
+        outfile.writelines(inlines)
 
 
 def hashfile(fname: pathlib.Path) -> str:
