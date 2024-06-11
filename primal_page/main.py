@@ -1,3 +1,5 @@
+from Bio import SeqIO
+
 import json
 import pathlib
 import shutil
@@ -379,7 +381,10 @@ def create(
     try:
         # Copy files and trim whitespace
         trim_file_whitespace(valid_primer_bed, repo_dir / "primer.bed")
-        trim_file_whitespace(valid_ref, repo_dir / "reference.fasta")
+        # parse the reference.fasta file
+        with open(repo_dir / "reference.fasta", "w") as ref_file:
+            records = SeqIO.parse(valid_ref, "fasta")
+            SeqIO.write(records, ref_file, "fasta")
 
         # Update the hashes in the info.json
         info.primer_bed_md5 = hashfile(repo_dir / "primer.bed")

@@ -1,3 +1,5 @@
+from Bio import SeqIO
+import hashlib
 import json
 import pathlib
 
@@ -47,9 +49,14 @@ def regenerate(
 
     # Trim whitespace from primer.bed and reference.fasta
     trim_file_whitespace(scheme_path / "primer.bed", scheme_path / "primer.bed")
-    trim_file_whitespace(
-        scheme_path / "reference.fasta", scheme_path / "reference.fasta"
-    )
+
+    # Hash the reference.fasta file
+    # If the hash is different, rewrite the file
+    ref_hash = hashfile(scheme_path / "reference.fasta")
+    ref_str = "".join((x.format("fasta") for x in SeqIO.parse(scheme_path / "reference.fasta", "fasta")))
+    if ref_hash != hashlib.md5(ref_str.encode()).hexdigest():
+        with open(scheme_path / "reference.fasta", "w") as ref_file:
+            ref_file.write(ref_str)
 
     # if articbedversion not set then set it
     articbedversion = determine_bedfile_version(scheme_path / "primer.bed")
