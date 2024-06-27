@@ -49,6 +49,25 @@ def not_empty(x: list | set | str) -> list | set | str:
     return x
 
 
+IUPACAmbiguousDNA = {
+    "A",
+    "G",
+    "K",
+    "Y",
+    "B",
+    "S",
+    "N",
+    "H",
+    "C",
+    "W",
+    "D",
+    "R",
+    "M",
+    "T",
+    "V",
+}
+
+
 class Collection(Enum):
     # Authors
     ARTIC = "ARTIC"

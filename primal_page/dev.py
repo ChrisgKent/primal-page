@@ -1,9 +1,9 @@
-from Bio import SeqIO
 import hashlib
 import json
 import pathlib
 
 import typer
+from Bio import SeqIO
 from typing_extensions import Annotated
 
 from primal_page.bedfiles import (
@@ -53,7 +53,9 @@ def regenerate(
     # Hash the reference.fasta file
     # If the hash is different, rewrite the file
     ref_hash = hashfile(scheme_path / "reference.fasta")
-    ref_str = "".join((x.format("fasta") for x in SeqIO.parse(scheme_path / "reference.fasta", "fasta")))
+    ref_str = "".join(
+        x.format("fasta") for x in SeqIO.parse(scheme_path / "reference.fasta", "fasta")
+    )
     if ref_hash != hashlib.md5(ref_str.encode()).hexdigest():
         with open(scheme_path / "reference.fasta", "w") as ref_file:
             ref_file.write(ref_str)

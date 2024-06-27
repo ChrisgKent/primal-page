@@ -1,5 +1,3 @@
-from Bio import SeqIO
-
 import json
 import pathlib
 import shutil
@@ -7,6 +5,7 @@ from enum import Enum
 from typing import Optional
 
 import typer
+from Bio import SeqIO
 from typing_extensions import Annotated
 
 from primal_page.__init__ import __version__
@@ -14,14 +13,23 @@ from primal_page.bedfiles import (
     BEDFileResult,
     BedfileVersion,
     determine_bedfile_version,
+    regenerate_v3_bedfile,
     validate_bedfile,
 )
 from primal_page.build_index import create_index
 from primal_page.dev import app as dev_app
 from primal_page.download import app as download_app
+from primal_page.errors import FileNotFound, InvalidReference, SchemeExists
 from primal_page.modify import app as modify_app
 from primal_page.modify import hashfile, regenerate_readme, trim_file_whitespace
-from primal_page.schemas import Collection, Info, Links, PrimerClass, SchemeStatus
+from primal_page.schemas import (
+    Collection,
+    Info,
+    IUPACAmbiguousDNA,
+    Links,
+    PrimerClass,
+    SchemeStatus,
+)
 
 
 class FindResult(Enum):
@@ -30,7 +38,7 @@ class FindResult(Enum):
 
 
 # Create the typer app
-app = typer.Typer(no_args_is_help=True)
+app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 app.add_typer(
     modify_app,
     name="modify",
@@ -59,6 +67,29 @@ def primal_page(
     pass
 
 
+def validate_ref_file(ref_file: pathlib.Path):
+    """
+    Validate the reference.fasta file
+    :param ref_file: The path to the reference.fasta file
+    :raises InvalidReference: If the reference.fasta file is invalid
+    """
+    # Very simple fasta validation
+    try:
+        records = SeqIO.index(ref_file, "fasta")
+    except Exception as e:
+        raise InvalidReference(f"Could not validate {ref_file}: {e}") from e
+
+    for record in records.values():
+        seq_bases = set(record.seq)
+        # Check DNA sequence
+        if not seq_bases.issubset(IUPACAmbiguousDNA):
+            raise InvalidReference(
+                f"Invalid DNA bases ({', '.join(seq_bases.difference(IUPACAmbiguousDNA))}) found in {ref_file}: {record.id}"
+            )
+        if len(record.seq) == 0:
+            raise InvalidReference(f"Empty sequence found in {ref_file}")
+
+
 def find_ref(
     cli_reference: pathlib.Path | None,
     found_files: list[pathlib.Path],
@@ -70,7 +101,7 @@ def find_ref(
     :param found_files: A list of all files found in the scheme directory
     :param schemepath: The path to the scheme directory
     :return: The path to the reference.fasta file
-    :raises FileNotFoundError: If the reference.fasta file cannot be found
+    :raises FileNotFound: If the reference.fasta file cannot be found
     """
     # Search for reference.fasta
     if cli_reference is None:  # No reference specified
@@ -83,14 +114,14 @@ def find_ref(
         if len(reference_list) == 1:
             return reference_list[0]
         else:
-            raise FileNotFoundError(
+            raise FileNotFound(
                 f"Could not find a SINGLE reference.fasta file in {schemepath} or its subdirectories, found {len(reference_list)}. Please specify manually with --reference"
             )
     elif cli_reference.exists():
-        # TODO validate the reference.fasta file
+        validate_ref_file(cli_reference)
         return cli_reference
     else:
-        raise FileNotFoundError(f"Could not find file at {cli_reference}")
+        raise FileNotFound(f"Could not find file at {cli_reference}")
 
 
 def find_primerbed(
@@ -104,7 +135,7 @@ def find_primerbed(
     :param found_files: A list of all files found in the scheme directory
     :param schemepath: The path to the scheme directory
     :return: The path to the primer.bed file
-    :raises FileNotFoundError: If the primer.bed file cannot be found
+    :raises FileNotFound: If the primer.bed file cannot be found
     """
     # Search for primer.bed
     if cli_primerbed is None:  # No primer.bed specified
@@ -115,13 +146,13 @@ def find_primerbed(
         if len(primer_bed_list) == 1:
             return primer_bed_list[0]
         else:
-            raise FileNotFoundError(
+            raise FileNotFound(
                 f"Could not find a SINGLE *.primer.bed file in {schemepath} or its subdirectories, found {len(primer_bed_list)}. Please specify manually with --primerbed"
             )
     elif cli_primerbed.exists():
         return cli_primerbed
     else:
-        raise FileNotFoundError(f"Could not find file at {cli_primerbed}")
+        raise FileNotFound(f"Could not find file at {cli_primerbed}")
 
 
 def find_config(
@@ -243,6 +274,7 @@ def create(
     link_misc: Annotated[
         list[str], typer.Option(help="Optional miscellaneous link")
     ] = [],
+    fix: Annotated[bool, typer.Option(help="Attempt to fix the scheme")] = False,
 ):
     """Create a new scheme in the required format"""
 
@@ -250,7 +282,9 @@ def create(
     found_files = [x for x in schemepath.rglob("*")]
 
     # Check for a single primer.bed file
-    valid_primer_bed = find_primerbed(primerbed, found_files, schemepath)
+    valid_primer_bed = find_primerbed(
+        cli_primerbed=primerbed, found_files=found_files, schemepath=schemepath
+    )
 
     match validate_bedfile(valid_primer_bed):
         case BEDFileResult.VALID:
@@ -267,9 +301,17 @@ def create(
     primerbed_version: BedfileVersion = determine_bedfile_version(valid_primer_bed)
 
     if primerbed_version != BedfileVersion.V3:
-        raise typer.BadParameter(
-            f"Primerbed version {primerbed_version.value} is not supported. Please use a v3.0 bedfile"
-        )
+        if fix:
+            try:
+                bedfile_str = regenerate_v3_bedfile(valid_primer_bed)
+            except Exception as e:
+                raise typer.BadParameter(
+                    f"Could not fix the primerbed file: {e}"
+                ) from e
+        else:
+            raise typer.BadParameter(
+                f"Primerbed version {primerbed_version.value} is not supported. Please update to v3.0 bedfile (See FAQ), or try with --fix to attempt to parse."
+            )
 
     # Find the reference.fasta file
     valid_ref = find_ref(reference, found_files, schemepath)
@@ -298,7 +340,7 @@ def create(
 
     elif status == FindResult.NOT_FOUND:
         if algorithmversion is None:
-            raise FileNotFoundError(
+            raise FileNotFound(
                 f"Could not find a config.json file in {schemepath}. Please specify manually with --configpath or specify algorithmversion with --algorithmversion"
             )
 
@@ -373,14 +415,18 @@ def create(
     # Check if the repo already exists
     repo_dir = output / schemename / str(ampliconsize) / schemeversion
     if repo_dir.exists():
-        raise FileExistsError(f"{repo_dir} already exists")
+        raise SchemeExists(f"{repo_dir} already exists")
     repo_dir.mkdir(parents=True)
 
     # If this fails it will deleted the half completed scheme
     # Need to check the repo doesnt already exist
     try:
         # Copy files and trim whitespace
-        trim_file_whitespace(valid_primer_bed, repo_dir / "primer.bed")
+        if fix:
+            with open(repo_dir / "primer.bed", "w") as bedfile:
+                bedfile.write(bedfile_str)
+        else:
+            trim_file_whitespace(valid_primer_bed, repo_dir / "primer.bed")
         # parse the reference.fasta file
         with open(repo_dir / "reference.fasta", "w") as ref_file:
             records = SeqIO.parse(valid_ref, "fasta")

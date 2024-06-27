@@ -3,6 +3,7 @@ import pathlib
 import shutil
 import unittest
 
+from primal_page.errors import FileNotFound
 from primal_page.main import FindResult, create, find_config, find_primerbed, find_ref
 from primal_page.schemas import SchemeStatus
 
@@ -131,7 +132,7 @@ class Test_Find(unittest.TestCase):
         )
 
         # Test fail when given a file with two refs
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(FileNotFound):
             new_schemepath = pathlib.Path(
                 "tests/test_input"
             )  # This dir contains two schemes dirs
@@ -139,7 +140,7 @@ class Test_Find(unittest.TestCase):
             find_ref(None, new_found_files, new_schemepath)
 
         # Test fail when given a file that doesn't exist
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(FileNotFound):
             find_ref(
                 cli_reference=pathlib.Path(
                     "tests/test_input/test_covid/missingref.fasta"
@@ -173,13 +174,13 @@ class Test_Find(unittest.TestCase):
         )
 
         # Test fail when given a file with two refs
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(FileNotFound):
             new_schemepath = pathlib.Path("tests/test_input")
             new_found_files = [x for x in new_schemepath.rglob("*")]
             find_primerbed(None, new_found_files, new_schemepath)
 
         # Test fail when given a file that doesn't exist
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(FileNotFound):
             find_primerbed(
                 cli_primerbed=pathlib.Path("tests/test_input/test_covid/missing.bed"),
                 found_files=self.found_files,
