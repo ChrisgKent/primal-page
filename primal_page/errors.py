@@ -43,3 +43,31 @@ class InvalidReference(UsageError):
 
     def __init__(self, message: str):
         super().__init__(message)
+
+
+class InvalidSchemeID(UsageError):
+    """Raised when a schemeid is invalid"""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class InvalidSchemeName(UsageError):
+    """Raised when a schemename is invalid"""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class InvalidAmpliconSize(UsageError):
+    """Raised when a schemeversion is invalid"""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class InvalidSchemeVersion(UsageError):
+    """Raised when a schemeversion is invalid"""
+
+    def __init__(self, message: str):
+        super().__init__(message)

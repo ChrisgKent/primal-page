@@ -218,12 +218,70 @@ $ primal-page [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `aliases`: Manage aliases
 * `build-index`: Build an index.json file from all schemes...
 * `create`: Create a new scheme in the required format
-* `dev`: Development commands
 * `download`: Download schemes from the index.json
 * `modify`: Modify an existing scheme's metadata...
 * `remove`: Remove a scheme's version from the repo,...
+
+## `primal-page aliases`
+
+Manage aliases
+
+**Usage**:
+
+```console
+$ primal-page aliases [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `add`: Add an alias:schemeid to the alias file
+* `remove`: Remove an alias from the alias file
+
+### `primal-page aliases add`
+
+Add an alias:schemeid to the alias file
+
+**Usage**:
+
+```console
+$ primal-page aliases add [OPTIONS] ALIASES_FILE ALIAS SCHEMEID
+```
+
+**Arguments**:
+
+* `ALIASES_FILE`: The path to the alias file to write to  [required]
+* `ALIAS`: The alias to add  [required]
+* `SCHEMEID`: The schemeid to add the alias refers to. In the form of 'schemename/ampliconsize/schemeversion'  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page aliases remove`
+
+Remove an alias from the alias file
+
+**Usage**:
+
+```console
+$ primal-page aliases remove [OPTIONS] ALIASES_FILE ALIAS
+```
+
+**Arguments**:
+
+* `ALIASES_FILE`: The path to the alias file to write to  [required]
+* `ALIAS`: The alias to add  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
 
 ## `primal-page build-index`
 
@@ -284,7 +342,6 @@ $ primal-page create [OPTIONS] SCHEMEPATH
 * `--fix / --no-fix`: Attempt to fix the scheme  [default: no-fix]
 * `--help`: Show this message and exit.
 
-
 ## `primal-page download`
 
 Download schemes from the index.json
@@ -301,17 +358,17 @@ $ primal-page download [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `download-all`: Download all schemes from the index.json
-* `download-scheme`: Download a scheme from the index.json
+* `all`: Download all schemes from the index.json
+* `scheme`: Download a scheme from the index.json
 
-### `primal-page download download-all`
+### `primal-page download all`
 
 Download all schemes from the index.json
 
 **Usage**:
 
 ```console
-$ primal-page download download-all [OPTIONS]
+$ primal-page download all [OPTIONS]
 ```
 
 **Options**:
@@ -320,14 +377,14 @@ $ primal-page download download-all [OPTIONS]
 * `--index-url TEXT`: The URL to the index.json  [default: https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json]
 * `--help`: Show this message and exit.
 
-### `primal-page download download-scheme`
+### `primal-page download scheme`
 
 Download a scheme from the index.json
 
 **Usage**:
 
 ```console
-$ primal-page download download-scheme [OPTIONS] SCHEMENAME AMPLICONSIZE SCHEMEVERSION
+$ primal-page download scheme [OPTIONS] SCHEMENAME AMPLICONSIZE SCHEMEVERSION
 ```
 
 **Arguments**:

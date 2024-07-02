@@ -9,6 +9,7 @@ from Bio import SeqIO
 from typing_extensions import Annotated
 
 from primal_page.__init__ import __version__
+from primal_page.aliases import app as aliases_app
 from primal_page.bedfiles import (
     BEDFileResult,
     BedfileVersion,
@@ -50,6 +51,7 @@ app.add_typer(
     help="Download schemes from the index.json",
 )
 app.add_typer(dev_app, name="dev", help="Development commands", hidden=True)
+app.add_typer(aliases_app, name="aliases", help="Manage aliases")
 
 
 def typer_callback_version(value: bool):

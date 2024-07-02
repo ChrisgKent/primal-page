@@ -6,6 +6,11 @@ from pydantic import BaseModel, PositiveInt
 from pydantic.functional_validators import AfterValidator
 
 from primal_page.bedfiles import BedfileVersion
+from primal_page.errors import (
+    InvalidSchemeID,
+    InvalidSchemeName,
+    InvalidSchemeVersion,
+)
 
 INFO_SCHEMA = "v2.0.0"
 
@@ -27,17 +32,58 @@ class SchemeStatus(Enum):
     VALIDATED = "validated"
 
 
+def validate_scheme_id(schemeid) -> tuple[str, str, str]:
+    """
+    Parse the schemeid into its components
+    :raises InvalidSchemeID: if the schemeid is invalid
+    """
+    try:
+        (
+            schemename,
+            ampliconsize,
+            schemeversion,
+        ) = schemeid.split("/")
+    except ValueError as e:
+        raise InvalidSchemeID(
+            f"{schemeid} needs to be in the form (schemename)/(ampliconsize)/(schemeversion)"
+        ) from e
+
+    # Validate each part separately
+    try:
+        schemename = validate_schemename(schemename)
+        schemeversion = validate_schemeversion(schemeversion)
+        ampliconsize = int(ampliconsize)
+    except InvalidSchemeName as e:
+        raise InvalidSchemeID(
+            f"{schemename} is an invalid schemename in {schemeid}"
+        ) from e
+    except InvalidSchemeVersion as e:
+        raise InvalidSchemeID(
+            f"{schemeversion} is an invalid schemeversion in {schemeid}"
+        ) from e
+    except ValueError as e:
+        raise InvalidSchemeID(
+            f"{ampliconsize} is an invalid ampliconsize in {schemeid}"
+        ) from e
+
+    return schemename, str(ampliconsize), schemeversion
+
+
 def validate_schemeversion(version: str) -> str:
     if not re.match(VERSION_PATTERN, version):
-        raise ValueError(
+        raise InvalidSchemeVersion(
             f"Invalid version: {version}. Must match be in form of v(int).(int).(int)"
         )
     return version
 
 
 def validate_schemename(schemename: str) -> str:
+    """
+    Validate the schemename
+    :raises InvalidSchemeName: if the schemename is invalid
+    """
     if not re.match(SCHEMENAME_PATTERN, schemename):
-        raise ValueError(
+        raise InvalidSchemeName(
             f"Invalid schemename: {schemename}. Must only contain a-z, 0-9, and -. Cannot start or end with -"
         )
     return schemename
