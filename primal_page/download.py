@@ -108,7 +108,7 @@ def download_all_func(index: dict, output: pathlib.Path):
 
 
 @app.command()
-def download_all(
+def all(
     output: Annotated[
         pathlib.Path,
         typer.Option(help="The directory the primerschemes dir will be created in"),
@@ -129,7 +129,7 @@ def download_all(
 
 
 @app.command()
-def download_scheme(
+def scheme(
     schemename: Annotated[
         str,
         typer.Argument(help="The name of the scheme", callback=validate_schemename),
