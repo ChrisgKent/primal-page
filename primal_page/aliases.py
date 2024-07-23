@@ -5,7 +5,8 @@ import re
 import typer
 from typing_extensions import Annotated
 
-from primal_page.schemas import validate_scheme_id
+from primal_page.logging import log
+from primal_page.schemas import validate_schemename
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -40,18 +41,22 @@ def remove(
     ],
 ):
     """
-    Remove an alias from the alias file
+    Remove an alias from the alias file. Does nothing if the alias does not exist
     """
     # Read in the info.json file
     with open(aliases_file) as f:
         aliases = json.load(f)
 
     # Remove the alias, if it exists
-    aliases.pop(alias, None)
+    removed_aliases = aliases.pop(alias, None)
+    if removed_aliases is None:
+        log.info(f"Alias ([blue]{alias}[/blue]) does not exist. Doing nothing.")
+        return
+    log.info(f"Removed alias: ([blue]{removed_aliases}[/blue])")
 
     # Write the new info.json file
     with open(aliases_file, "w") as f:
-        json.dump(aliases, f, indent=4, sort_keys=True)
+        json.dump(aliases, f, sort_keys=True)
 
 
 @app.command(no_args_is_help=True)
@@ -72,41 +77,36 @@ def add(
             callback=validate_alias,
         ),
     ],
-    schemeid: Annotated[
+    schemename: Annotated[
         str,
         typer.Argument(
-            help="The schemeid to add the alias refers to. In the form of 'schemename/ampliconsize/schemeversion'"
+            help="The schemename the alias refers to", callback=validate_schemename
         ),
     ],
 ):
     """
-    Add an alias:schemeid to the alias file
+    Add an alias:schemename to the alias file
     """
-    # Parse the schemeid
-    schemename, ampliconsize, schemeversion = validate_scheme_id(schemeid)
-
     # Read in the info.json file
     with open(aliases_file) as f:
-        aliases = json.load(f)
+        try:
+            aliases = json.load(f)
+        except json.JSONDecodeError:
+            aliases = {}
 
     # Check if the alias already exists
     if alias in aliases:
-        raise typer.BadParameter(f"({alias}) already exists in the alias file")
+        log.info(f"Alias ([blue]{alias}[/blue]) already exists. Doing nothing.")
+        return
+    log.info(f"Added alias: ([blue]{alias}[/blue]) -> ([blue]{schemename}[/blue])")
 
     # Add the alias
-    aliases[alias] = "/".join([schemename, ampliconsize, schemeversion])
+    # typer will have already validated the schemename
+    aliases[alias] = schemename
 
     # Write the new info.json file
     with open(aliases_file, "w") as f:
-        json.dump(aliases, f, indent=4, sort_keys=True)
-
-
-def parse_alias(aliases_file: pathlib.Path, alias: str) -> str:
-    with open(aliases_file) as f:
-        aliases = json.load(f)
-    if alias not in aliases:
-        raise typer.BadParameter(f"({alias}) does not exist in the alias file")
-    return aliases[alias]
+        json.dump(aliases, f, sort_keys=True)
 
 
 if __name__ == "__main__":

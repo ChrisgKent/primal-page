@@ -6,6 +6,7 @@ import requests
 import typer
 from typing_extensions import Annotated
 
+from primal_page.logging import log
 from primal_page.schemas import validate_schemename, validate_schemeversion
 
 app = typer.Typer(no_args_is_help=True)
@@ -75,7 +76,7 @@ def download_scheme_func(
     with open(scheme_dir / "info.json", "w") as f:
         f.write(info_text)
 
-    print(f"Downloaded:\t{schemename}/{ampliconsize}/{schemeversion}")
+    log.info(f"Downloaded:\t{schemename}/{ampliconsize}/{schemeversion}")
 
 
 def fetch_index(index_url: str) -> dict:

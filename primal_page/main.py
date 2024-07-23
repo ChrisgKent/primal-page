@@ -21,8 +21,13 @@ from primal_page.build_index import create_index
 from primal_page.dev import app as dev_app
 from primal_page.download import app as download_app
 from primal_page.errors import FileNotFound, InvalidReference, SchemeExists
+from primal_page.logging import log
 from primal_page.modify import app as modify_app
-from primal_page.modify import hashfile, regenerate_readme, trim_file_whitespace
+from primal_page.modify import (
+    generate_files,
+    hashfile,
+    trim_file_whitespace,
+)
 from primal_page.schemas import (
     Collection,
     Info,
@@ -460,12 +465,9 @@ def create(
         for msa in msas:
             shutil.copy(msa, working_dir / msa.name)
 
-        # Write info.json
-        with open(repo_dir / "info.json", "w") as infofile:
-            infofile.write(info.model_dump_json(indent=4))
+        # Write out the info.json and readme
+        generate_files(info, repo_dir)
 
-        # Create a README.md with link to all pngs
-        regenerate_readme(repo_dir, info, pngs)
     except Exception as e:
         # Cleanup
         shutil.rmtree(repo_dir)
@@ -521,6 +523,8 @@ def remove(
     scheme_dir = size_dir.parent
     if len(list(scheme_dir.iterdir())) == 0:
         scheme_dir.rmdir()
+
+    log.info(f"Removed {schemeinfo}")
 
 
 if __name__ == "__main__":

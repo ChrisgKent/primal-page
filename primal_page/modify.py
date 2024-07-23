@@ -5,6 +5,7 @@ from typing import Optional
 import typer
 from typing_extensions import Annotated
 
+from primal_page.logging import log
 from primal_page.schemas import (
     Collection,
     Info,
@@ -75,17 +76,24 @@ def regenerate_readme(path: pathlib.Path, info: Info, pngs: list[pathlib.Path]):
 
         readme.write("## Details\n\n")
 
-        # Write the detials into the readme
+        # Write the details into the readme
         readme.write(f"""```json\n{info.model_dump_json(indent=4)}\n```\n\n""")
 
         if info.license == "CC BY-SA 4.0":
             readme.write(LICENSE_TXT_CC_BY_SA_4_0)
 
+        log.debug(f"Regenerated README.md for {info.get_schemepath()}")
 
-def regenerate_files(info: Info, schemeinfo: pathlib.Path):
-    # Write the validated info.json
+
+def write_info_json(info: Info, schemeinfo: pathlib.Path):
     with open(schemeinfo, "w") as infofile:
         infofile.write(info.model_dump_json(indent=4))
+    log.debug(f"Regenerated info.json for {info.get_schemepath()}")
+
+
+def generate_files(info: Info, schemeinfo: pathlib.Path):
+    # Write the validated info.json
+    write_info_json(info, schemeinfo)
 
     # Update the README
     scheme_path = schemeinfo.parent
@@ -119,13 +127,16 @@ def add_link(
 
     try:
         info.links.append_link(linkfield, link)
+        log.info(
+            f"Added link: [blue]{link}[/blue] to [blue]{linkfield}[/blue] for {info.get_schemepath()}"
+        )
     except AttributeError:
         raise typer.BadParameter(
             f"{linkfield} is not a valid link field. Please choose from {', '.join(Links.model_fields.keys())}"
         ) from None
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -154,6 +165,9 @@ def remove_link(
 
     try:
         info.links.remove_link(linkfield, link)
+        log.info(
+            f"Removed link: [blue]{link}[/blue] from [blue]{linkfield}[/blue] for {info.get_schemepath()}"
+        )
     except AttributeError:
         raise typer.BadParameter(
             f"{linkfield} is not a valid link field. Please choose from {', '.join(Links.model_fields.keys())}"
@@ -164,7 +178,7 @@ def remove_link(
         ) from None
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -188,9 +202,10 @@ def add_author(
     info = Info.model_validate_json(schemeinfo.read_text())
 
     info.add_author(author, author_index)
+    log.info(f"Added author: [blue]{author}[/blue] to {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -208,11 +223,12 @@ def remove_author(
 
     try:
         info.remove_author(author)
+        log.info(f"Removed author: [blue]{author}[/blue] from {info.get_schemepath()}")
     except KeyError:
         raise typer.BadParameter(f"{author} is already not present") from None
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -251,13 +267,14 @@ def reorder_authors(
 
     try:
         info.reorder_authors(new_order)
+        log.info(f"Reordered authors in {info.get_schemepath()}")
     except ValueError as e:
         raise typer.BadParameter(f"{e}") from None
     except IndexError as e:
         raise typer.BadParameter(f"{e}") from None
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -275,9 +292,10 @@ def add_citation(
 
     # Add the citation
     info.add_citation(citation)
+    log.info(f"Added citation: [blue]{citation}[/blue] to {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -295,11 +313,14 @@ def remove_citation(
 
     try:
         info.remove_citation(citation)
+        log.info(
+            f"Removed citation: [blue]{citation}[/blue] from to {info.get_schemepath()}"
+        )
     except KeyError:
         raise typer.BadParameter(f"{citation} is already not present") from None
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -318,11 +339,14 @@ def remove_collection(
     # Check if collection is already not in the list
     try:
         info.remove_collection(collection)
+        log.info(
+            f"Removed collection: [blue]{collection}[/blue] from to {info.get_schemepath()}"
+        )
     except KeyError:
         raise typer.BadParameter(f"{collection} is already not present") from None
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -339,9 +363,10 @@ def add_collection(
     info = Info.model_validate_json(schemeinfo.read_text())
 
     info.add_collection(collection)
+    log.info(f"Added collection: [blue]{collection}[/blue] to {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -364,9 +389,10 @@ def change_description(
 
     # Change the description
     info.change_description(description.strip())
+    log.info(f"Changed description for {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -389,9 +415,10 @@ def change_derivedfrom(
 
     # Add the derivedfrom
     info.change_derivedfrom(derivedfrom.strip())
+    log.info(f"Changed derivedfrom for {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -414,9 +441,10 @@ def change_license(
 
     # Change the license
     info.change_license(license)
+    log.info(f"Changed license for {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -440,9 +468,12 @@ def change_status(
 
     # Change the status
     info.change_status(schemestatus)
+    log.info(
+        f"Changed status to [blue]{schemestatus}[/blue] for {info.get_schemepath()}"
+    )
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -463,9 +494,12 @@ def change_primerclass(
 
     # Change the primerclass
     info.change_primerclass(primerclass)
+    log.info(
+        f"Changed primerclass to [blue]{primerclass}[/blue] for {info.get_schemepath()}"
+    )
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -488,6 +522,9 @@ def change_contactinfo(
 
     # Change the contactinfo
     info.change_contactinfo(contactinfo)
+    log.info(
+        f"Changed contactinfo to [blue]{contactinfo}[/blue] for {info.get_schemepath()}"
+    )
 
     # Write the validated info.json and regenerate the README
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)

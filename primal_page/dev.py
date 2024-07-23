@@ -10,7 +10,8 @@ from primal_page.bedfiles import (
     determine_bedfile_version,
     regenerate_v3_bedfile,
 )
-from primal_page.modify import hashfile, regenerate_files, trim_file_whitespace
+from primal_page.logging import log
+from primal_page.modify import generate_files, hashfile, trim_file_whitespace
 from primal_page.schemas import (
     INFO_SCHEMA,
     BedfileVersion,
@@ -79,7 +80,7 @@ def regenerate(
     # Final validation and create files #
     #####################################
 
-    regenerate_files(info, schemeinfo)
+    generate_files(info, schemeinfo)
 
 
 @app.command()
@@ -101,7 +102,7 @@ def migrate(
             for schemeversion in ampliconsize.iterdir():
                 if not schemeversion.is_dir():
                     continue
-                print(f"Regenerating {schemeversion}")
+                log.info(f"Regenerating {schemename}/{ampliconsize}/{schemeversion}")
                 info = schemeversion / "info.json"
                 if info.exists():
                     # Modify the primer.bed
@@ -109,7 +110,9 @@ def migrate(
 
                     # If the bedfile is the same, dont write it
                     if bedfile_str == (schemeversion / "primer.bed").read_text():
-                        print("No changes to primer.bed")
+                        log.info(
+                            f"No changes to {schemename}/{ampliconsize}/{schemeversion}/primer.bed"
+                        )
                     else:
                         with open(schemeversion / "primer.bed", "w") as f:
                             f.write(bedfile_str)

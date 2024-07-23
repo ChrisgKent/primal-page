@@ -3,6 +3,7 @@ import json
 import pathlib
 import sys
 
+from primal_page.logging import log
 from primal_page.schemas import PrimerClass
 
 
@@ -210,7 +211,7 @@ def create_index(
             scheme_name = path.name
             pclass_dict[scheme_name] = parse_scheme(path, repo_url, scheme_name, pclass)
 
-            print(f"parsed {pclass}/{scheme_name}")
+            log.info(f"parsed {pclass}/{scheme_name}")
 
         # Add the pclass to the json_dict
         json_dict[pclass] = pclass_dict

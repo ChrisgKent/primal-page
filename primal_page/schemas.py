@@ -72,7 +72,7 @@ def validate_scheme_id(schemeid) -> tuple[str, str, str]:
 def validate_schemeversion(version: str) -> str:
     if not re.match(VERSION_PATTERN, version):
         raise InvalidSchemeVersion(
-            f"Invalid version: {version}. Must match be in form of v(int).(int).(int)"
+            f"Invalid version: ({version}). Must match be in form of v(int).(int).(int)"
         )
     return version
 
@@ -84,7 +84,7 @@ def validate_schemename(schemename: str) -> str:
     """
     if not re.match(SCHEMENAME_PATTERN, schemename):
         raise InvalidSchemeName(
-            f"Invalid schemename: {schemename}. Must only contain a-z, 0-9, and -. Cannot start or end with -"
+            f"Invalid schemename: ({schemename}). Must only contain a-z, 0-9, and -. Cannot start or end with -"
         )
     return schemename
 
@@ -279,6 +279,9 @@ class Info(BaseModel):
         """Change the contactinfo"""
         self.contactinfo = new_contactinfo
 
+    def get_schemepath(self) -> str:
+        return f"{self.schemename}/{self.ampliconsize}/{self.schemeversion}"
+
 
 if __name__ == "__main__":
     info = Info(
@@ -298,6 +301,3 @@ if __name__ == "__main__":
     )
 
     info_json = info.model_dump_json()
-    print(info_json)
-
-    info2 = Info.model_validate_json(info_json)
