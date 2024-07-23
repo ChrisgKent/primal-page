@@ -387,7 +387,7 @@ def create(
 
     # Create the links set
     links = Links(
-        protocals=link_protocal,
+        protocols=link_protocal,
         validation=link_validation,
         homepage=links_homepage,
         vendors=link_vendor,

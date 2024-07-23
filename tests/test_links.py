@@ -19,11 +19,11 @@ class TestLinks(unittest.TestCase):
 
     def test_remove_link(self):
         linktoremove = "https://example.com"
-        links = Links(protocals=[linktoremove])
+        links = Links(protocols=[linktoremove])
 
-        # Remove the link from protocals
-        links.remove_link("protocals", linktoremove)
-        self.assertEqual(links.protocals, [])
+        # Remove the link from protocols
+        links.remove_link("protocols", linktoremove)
+        self.assertEqual(links.protocols, [])
 
         # Remove a link from an incorrect linkfield
         with self.assertRaises(AttributeError):
@@ -31,7 +31,7 @@ class TestLinks(unittest.TestCase):
 
         # Remove a link that is not in the linkfield
         with self.assertRaises(ValueError):
-            links.remove_link("protocals", linktoremove)
+            links.remove_link("protocols", linktoremove)
 
 
 if __name__ == "__main__":

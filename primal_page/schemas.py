@@ -130,7 +130,7 @@ class Collection(Enum):
 
 
 class Links(BaseModel):
-    protocals: list[str] = []
+    protocols: list[str] = []
     validation: list[str] = []
     homepage: list[str] = []
     vendors: list[str] = []

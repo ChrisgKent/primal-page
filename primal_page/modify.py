@@ -86,6 +86,13 @@ def regenerate_readme(path: pathlib.Path, info: Info, pngs: list[pathlib.Path]):
 
 
 def write_info_json(info: Info, schemeinfo: pathlib.Path):
+    """
+    Write the validated info.json to the scheme directory
+    :param info: The validated info.json
+    :type info: Info
+    :param schemeinfo: The path to the info.json file
+    :type schemeinfo: pathlib.Path
+    """
     with open(schemeinfo, "w") as infofile:
         infofile.write(info.model_dump_json(indent=4))
     log.debug(f"Regenerated info.json for {info.get_schemepath()}")
@@ -93,7 +100,7 @@ def write_info_json(info: Info, schemeinfo: pathlib.Path):
 
 def generate_files(info: Info, schemeinfo: pathlib.Path):
     # Write the validated info.json
-    write_info_json(info, schemeinfo)
+    write_info_json(info, schemeinfo / "info.json")
 
     # Update the README
     scheme_path = schemeinfo.parent
