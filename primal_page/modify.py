@@ -108,7 +108,7 @@ def generate_files(info: Info, schemeinfo: pathlib.Path):
     regenerate_readme(scheme_path, info, pngs)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def add_link(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -146,7 +146,7 @@ def add_link(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def remove_link(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -188,7 +188,7 @@ def remove_link(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def add_author(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -215,7 +215,7 @@ def add_author(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def remove_author(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -238,7 +238,7 @@ def remove_author(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def reorder_authors(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -284,7 +284,7 @@ def reorder_authors(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def add_citation(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -305,7 +305,7 @@ def add_citation(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def remove_citation(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -330,7 +330,7 @@ def remove_citation(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def remove_collection(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -356,7 +356,7 @@ def remove_collection(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def add_collection(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -376,7 +376,7 @@ def add_collection(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def change_description(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -402,7 +402,7 @@ def change_description(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def change_derivedfrom(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -428,7 +428,7 @@ def change_derivedfrom(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def change_license(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -454,7 +454,7 @@ def change_license(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def change_status(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -483,7 +483,7 @@ def change_status(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def change_primerclass(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -509,7 +509,7 @@ def change_primerclass(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def change_contactinfo(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -534,4 +534,20 @@ def change_contactinfo(
     )
 
     # Write the validated info.json and regenerate the README
+    generate_files(info, schemeinfo)
+
+
+@app.command(no_args_is_help=True)
+def regenerate(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
+    ],
+):
+    """
+    Validates the info.json and regenerate the README.md
+    """
+    info = Info.model_validate_json(schemeinfo.read_text())
     generate_files(info, schemeinfo)

@@ -193,7 +193,7 @@ def find_config(
         return (FindResult.NOT_FOUND, None)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def create(
     schemepath: Annotated[
         pathlib.Path,
@@ -474,7 +474,7 @@ def create(
         raise typer.BadParameter(f"{e}\nCleaning up {repo_dir}") from e
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def build_index(
     gitaccount: Annotated[
         str,
@@ -499,7 +499,7 @@ def build_index(
     create_index(gitserver, gitaccount, parentdir, git_commit_sha, force)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def remove(
     schemeinfo: Annotated[
         pathlib.Path,

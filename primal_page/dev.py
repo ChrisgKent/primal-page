@@ -21,7 +21,7 @@ from primal_page.schemas import (
 app = typer.Typer(no_args_is_help=True)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def regenerate(
     schemeinfo: Annotated[
         pathlib.Path,
@@ -83,7 +83,7 @@ def regenerate(
     generate_files(info, schemeinfo)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def migrate(
     primerschemes: Annotated[pathlib.Path, typer.Argument(help="The parent directory")],
 ):

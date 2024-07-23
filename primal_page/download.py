@@ -108,7 +108,7 @@ def download_all_func(index: dict, output: pathlib.Path):
                 )
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def all(
     output: Annotated[
         pathlib.Path,
@@ -129,7 +129,7 @@ def all(
     download_all_func(output=output, index=index)
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def scheme(
     schemename: Annotated[
         str,
