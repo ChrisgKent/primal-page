@@ -11,7 +11,7 @@ from primal_page.bedfiles import (
     regenerate_v3_bedfile,
 )
 from primal_page.logging import log
-from primal_page.modify import generate_files, hashfile, trim_file_whitespace
+from primal_page.modify import generate_files, hash_file, trim_file_whitespace
 from primal_page.schemas import (
     INFO_SCHEMA,
     BedfileVersion,
@@ -53,7 +53,7 @@ def regenerate(
 
     # Hash the reference.fasta file
     # If the hash is different, rewrite the file
-    ref_hash = hashfile(scheme_path / "reference.fasta")
+    ref_hash = hash_file(scheme_path / "reference.fasta")
     ref_str = "".join(
         x.format("fasta") for x in SeqIO.parse(scheme_path / "reference.fasta", "fasta")
     )
@@ -70,8 +70,8 @@ def regenerate(
     info_json["articbedversion"] = articbedversion.value
 
     # Regenerate the files hashes
-    info_json["primer_bed_md5"] = hashfile(scheme_path / "primer.bed")
-    info_json["reference_fasta_md5"] = hashfile(scheme_path / "reference.fasta")
+    info_json["primer_bed_md5"] = hash_file(scheme_path / "primer.bed")
+    info_json["reference_fasta_md5"] = hash_file(scheme_path / "reference.fasta")
 
     info = Info(**info_json)
     info.infoschema = INFO_SCHEMA

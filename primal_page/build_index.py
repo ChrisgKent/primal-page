@@ -1,18 +1,10 @@
-import hashlib
 import json
 import pathlib
 import sys
 
 from primal_page.logging import log
+from primal_page.modify import hash_file
 from primal_page.schemas import PrimerClass
-
-
-def hashfile(fname):
-    hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
 
 
 def create_rawlink(repo, scheme_name, length, version, file, pclass) -> str:
@@ -49,14 +41,14 @@ def parse_version(
     version_dict["primer_bed_url"] = create_rawlink(
         repo_url, scheme_name, length, version.name, primerbed.name, pclass
     )
-    version_dict["primer_bed_md5"] = hashfile(primerbed)
+    version_dict["primer_bed_md5"] = hash_file(primerbed)
 
     # Add the reference.fasta file
     reference = version_path / "reference.fasta"
     version_dict["reference_fasta_url"] = create_rawlink(
         repo_url, scheme_name, length, version.name, reference.name, pclass
     )
-    version_dict["reference_fasta_md5"] = hashfile(reference)
+    version_dict["reference_fasta_md5"] = hash_file(reference)
 
     # Add the info.json file url
     version_dict["info_json_url"] = create_rawlink(
@@ -185,7 +177,7 @@ def create_index(
     Args:
         server_url (str): The URL of the server.
         repo_url (str): The URL of the repository.
-        parent_dir (str, optional): The parent directory path containing the primerscheme dir. index.json will be writem to parent_dir/index.json Defaults to ".".
+        parent_dir (str, optional): The parent directory path containing the primerscheme dir. index.json will be written to parent_dir/index.json Defaults to ".".
         git_commit (str, optional): The git commit hash. Defaults to None.
         force (bool, optional): Force the creation of the index.json file. Allowing the change of hashes
 

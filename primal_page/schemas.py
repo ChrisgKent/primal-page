@@ -122,7 +122,7 @@ class Collection(Enum):
     COMMUNITY = "COMMUNITY"
     # Uses
     WASTE_WATER = "WASTE-WATER"
-    CLINAL_ISOLATES = "CLINAL-ISOLATES"
+    CLINICAL_ISOLATES = "CLINICAL-ISOLATES"
     # Coverage types
     WHOLE_GENOME = "WHOLE-GENOME"
     PANEL = "PANEL"
@@ -163,7 +163,7 @@ class Links(BaseModel):
         link: str,
     ):
         """
-        Remove a the first occourance of the link from the correct list
+        Remove a the first occurrence of the link from the correct list
         Raises:
         -   ValueError if the link is not in the list
         -   AttributeError if the link_type is not in the model_fields

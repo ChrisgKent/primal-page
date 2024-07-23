@@ -37,7 +37,7 @@ def trim_file_whitespace(in_path: pathlib.Path, out_path: pathlib.Path):
         outfile.writelines(inlines)
 
 
-def hashfile(fname: pathlib.Path) -> str:
+def hash_file(fname: pathlib.Path) -> str:
     hash_md5 = hashlib.md5()
     with open(fname, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
@@ -249,7 +249,7 @@ def reorder_authors(
     author_index: Annotated[
         Optional[str],
         typer.Argument(
-            help="The indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end"
+            help="The indexes in the new order, separated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end"
         ),
     ] = None,
 ):
@@ -265,7 +265,7 @@ def reorder_authors(
 
         # Get the new order
         new_order_str: str = typer.prompt(
-            "Please provide the indexes in the new order, seperated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end",
+            "Please provide the indexes in the new order, separated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end",
             type=str,
         )
         new_order = [int(x) for x in new_order_str.split()]
@@ -520,7 +520,7 @@ def change_contactinfo(
     contactinfo: Annotated[
         Optional[str],
         typer.Argument(
-            help="The contact infomation for this scheme. Use 'None' to remove the contact info",
+            help="The contact information for this scheme. Use 'None' to remove the contact info",
         ),
     ],
 ):

@@ -25,7 +25,7 @@ from primal_page.logging import log
 from primal_page.modify import app as modify_app
 from primal_page.modify import (
     generate_files,
-    hashfile,
+    hash_file,
     trim_file_whitespace,
 )
 from primal_page.schemas import (
@@ -114,9 +114,7 @@ def find_ref(
     if cli_reference is None:  # No reference specified
         # Search for a single *.fasta
         reference_list: list[pathlib.Path] = [
-            path
-            for path in found_files
-            if path.name == ("reference.fasta") or path.name == ("referance.fasta")
+            path for path in found_files if path.name == ("reference.fasta")
         ]
         if len(reference_list) == 1:
             return reference_list[0]
@@ -236,7 +234,7 @@ def create(
     reference: Annotated[
         Optional[pathlib.Path],
         typer.Option(
-            help="Manually specify the referance.fasta file, default is *.fasta",
+            help="Manually specify the reference.fasta file, default is *.fasta",
             readable=True,
         ),
     ] = None,
@@ -266,7 +264,7 @@ def create(
     collection: Annotated[
         Optional[list[Collection]], typer.Option(help="The collection")
     ] = None,
-    link_protocal: Annotated[
+    link_protocol: Annotated[
         list[str], typer.Option(help="Optional link to protocol")
     ] = [],
     link_validation: Annotated[
@@ -387,7 +385,7 @@ def create(
 
     # Create the links set
     links = Links(
-        protocols=link_protocal,
+        protocols=link_protocol,
         validation=link_validation,
         homepage=links_homepage,
         vendors=link_vendor,
@@ -426,7 +424,7 @@ def create(
     repo_dir.mkdir(parents=True)
 
     # If this fails it will deleted the half completed scheme
-    # Need to check the repo doesnt already exist
+    # Need to check the repo doesn't already exist
     try:
         # Copy files and trim whitespace
         if fix:
@@ -440,8 +438,8 @@ def create(
             SeqIO.write(records, ref_file, "fasta")
 
         # Update the hashes in the info.json
-        info.primer_bed_md5 = hashfile(repo_dir / "primer.bed")
-        info.reference_fasta_md5 = hashfile(repo_dir / "reference.fasta")
+        info.primer_bed_md5 = hash_file(repo_dir / "primer.bed")
+        info.reference_fasta_md5 = hash_file(repo_dir / "reference.fasta")
 
         working_dir = repo_dir / "work"
         working_dir.mkdir()
