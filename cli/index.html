@@ -1,0 +1,1336 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://chrisgkent.github.io/primal-page/cli/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.28">
+    
+    
+      
+        <title>Command Line Interface - primal-page</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#primal-page" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="primal-page" class="md-header__button md-logo" aria-label="primal-page" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            primal-page
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Command Line Interface
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ChrisgKent/primal-page" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    primal-page
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="primal-page" class="md-nav__button md-logo" aria-label="primal-page" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    primal-page
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ChrisgKent/primal-page" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    primal-page
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Command Line Interface
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Command Line Interface
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-aliases" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page aliases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="primal-page aliases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-aliases-add" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page aliases add
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-aliases-remove" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page aliases remove
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-build-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page build-index
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-create" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page create
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page download
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="primal-page download">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-download-all" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page download all
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-download-scheme" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page download scheme
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="primal-page modify">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-add-author" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify add-author
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-add-citation" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify add-citation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-add-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify add-collection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-add-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify add-link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-contactinfo" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-contactinfo
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-derivedfrom" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-derivedfrom
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-description
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-license" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-license
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-primerclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-primerclass
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-status
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-regenerate" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify regenerate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-remove-author" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify remove-author
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-remove-citation" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify remove-citation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-remove-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify remove-collection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-remove-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify remove-link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-reorder-authors" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify reorder-authors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-remove" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page remove
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-aliases" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page aliases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="primal-page aliases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-aliases-add" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page aliases add
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-aliases-remove" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page aliases remove
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-build-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page build-index
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-create" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page create
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page download
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="primal-page download">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-download-all" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page download all
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-download-scheme" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page download scheme
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="primal-page modify">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-add-author" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify add-author
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-add-citation" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify add-citation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-add-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify add-collection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-add-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify add-link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-contactinfo" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-contactinfo
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-derivedfrom" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-derivedfrom
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-description
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-license" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-license
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-primerclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-primerclass
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-change-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify change-status
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-regenerate" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify regenerate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-remove-author" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify remove-author
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-remove-citation" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify remove-citation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-remove-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify remove-collection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-remove-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify remove-link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primal-page-modify-reorder-authors" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page modify reorder-authors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primal-page-remove" class="md-nav__link">
+    <span class="md-ellipsis">
+      primal-page remove
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="primal-page"><code>primal-page</code></h1>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</code></pre></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--version</code></li>
+<li><code>--install-completion</code>: Install completion for the current shell.</li>
+<li><code>--show-completion</code>: Show completion for the current shell, to copy it or customize the installation.</li>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li><code>aliases</code>: Manage aliases</li>
+<li><code>build-index</code>: Build an index.json file from all schemes...</li>
+<li><code>create</code>: Create a new scheme in the required format</li>
+<li><code>dev</code>: Development commands</li>
+<li><code>download</code>: Download schemes from the index.json</li>
+<li><code>modify</code>: Modify an existing scheme's metadata...</li>
+<li><code>remove</code>: Remove a scheme's version from the repo,...</li>
+</ul>
+<h2 id="primal-page-aliases"><code>primal-page aliases</code></h2>
+<p>Manage aliases</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>aliases<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</code></pre></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li><code>add</code>: Add an alias:schemename to the alias file</li>
+<li><code>remove</code>: Remove an alias from the alias file.</li>
+</ul>
+<h3 id="primal-page-aliases-add"><code>primal-page aliases add</code></h3>
+<p>Add an alias:schemename to the alias file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>aliases<span class="w"> </span>add<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ALIASES_FILE<span class="w"> </span>ALIAS<span class="w"> </span>SCHEMENAME
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>ALIASES_FILE</code>: The path to the alias file to write to  [required]</li>
+<li><code>ALIAS</code>: The alias to add  [required]</li>
+<li><code>SCHEMENAME</code>: The schemename the alias refers to  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-aliases-remove"><code>primal-page aliases remove</code></h3>
+<p>Remove an alias from the alias file. Does nothing if the alias does not exist</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>aliases<span class="w"> </span>remove<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ALIASES_FILE<span class="w"> </span>ALIAS
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>ALIASES_FILE</code>: The path to the alias file to write to  [required]</li>
+<li><code>ALIAS</code>: The alias to add  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h2 id="primal-page-build-index"><code>primal-page build-index</code></h2>
+<p>Build an index.json file from all schemes in the directory</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>build-index<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--gitaccount TEXT</code>: The name of the github account  [default: quick-lab]</li>
+<li><code>--gitserver TEXT</code>: The name of the github server  [default: https://github.com/]</li>
+<li><code>--parentdir PATH</code>: The parent directory  [default: .]</li>
+<li><code>--git-commit-sha TEXT</code>: The git commit</li>
+<li><code>--force / --no-force</code>: Force the creation of the index.json  [default: no-force]</li>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h2 id="primal-page-create"><code>primal-page create</code></h2>
+<p>Create a new scheme in the required format</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEPATH
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEPATH</code>: The path to the primerscheme directory  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--schemename TEXT</code>: The name of the scheme  [required]</li>
+<li><code>--ampliconsize INTEGER RANGE</code>: Amplicon size  [x&gt;=100; required]</li>
+<li><code>--schemeversion TEXT</code>: Scheme version, default is parsed from config.json  [required]</li>
+<li><code>--species INTEGER</code>: The species this scheme targets. Please use NCBI taxonomy ids  [required]</li>
+<li><code>--authors TEXT</code>: Any authors  [required]</li>
+<li><code>--schemestatus [withdrawn|deprecated|autogenerated|draft|tested|validated]</code>: Scheme status  [default: draft]</li>
+<li><code>--citations TEXT</code>: Any associated citations. Please use DOI</li>
+<li><code>--primerbed PATH</code>: Manually specify the primer bed file, default is *primer.bed</li>
+<li><code>--reference PATH</code>: Manually specify the reference.fasta file, default is *.fasta</li>
+<li><code>--output PATH</code>: Where to output the scheme  [default: primerschemes]</li>
+<li><code>--configpath PATH</code>: Where the config.json file is located</li>
+<li><code>--algorithmversion TEXT</code>: The version of primalscheme or other</li>
+<li><code>--description TEXT</code>: A description of the scheme</li>
+<li><code>--derivedfrom TEXT</code>: Which scheme has this scheme been derived from</li>
+<li><code>--primerclass [primerschemes]</code>: The primer class  [default: primerschemes]</li>
+<li><code>--collection [ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET]</code>: The collection</li>
+<li><code>--link-protocol TEXT</code>: Optional link to protocol</li>
+<li><code>--link-validation TEXT</code>: Optional link to validation data</li>
+<li><code>--links-homepage TEXT</code>: Optional link to homepage</li>
+<li><code>--link-vendor TEXT</code>: Optional link to vendors</li>
+<li><code>--link-misc TEXT</code>: Optional miscellaneous link</li>
+<li><code>--fix / --no-fix</code>: Attempt to fix the scheme  [default: no-fix]</li>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h2 id="primal-page-download"><code>primal-page download</code></h2>
+<p>Download schemes from the index.json</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>download<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</code></pre></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li><code>all</code>: Download all schemes from the index.json</li>
+<li><code>scheme</code>: Download a scheme from the index.json</li>
+</ul>
+<h3 id="primal-page-download-all"><code>primal-page download all</code></h3>
+<p>Download all schemes from the index.json</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>download<span class="w"> </span>all<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--output PATH</code>: The directory the primerschemes dir will be created in  [required]</li>
+<li><code>--index-url TEXT</code>: The URL to the index.json  [default: https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json]</li>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-download-scheme"><code>primal-page download scheme</code></h3>
+<p>Download a scheme from the index.json</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>download<span class="w"> </span>scheme<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMENAME<span class="w"> </span>AMPLICONSIZE<span class="w"> </span>SCHEMEVERSION
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMENAME</code>: The name of the scheme  [required]</li>
+<li><code>AMPLICONSIZE</code>: Amplicon size  [required]</li>
+<li><code>SCHEMEVERSION</code>: Scheme version  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--output PATH</code>: The directory the primerschemes dir will be created in  [required]</li>
+<li><code>--index-url TEXT</code>: The URL to the index.json  [default: https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json]</li>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h2 id="primal-page-modify"><code>primal-page modify</code></h2>
+<p>Modify an existing scheme's metadata (info.json)</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</code></pre></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li><code>add-author</code>: Append an author to the authors list in...</li>
+<li><code>add-citation</code>: Append an citation to the authors list in...</li>
+<li><code>add-collection</code>: Add a Collection to the Collection list in...</li>
+<li><code>add-link</code>: Add a link to the selected link field to...</li>
+<li><code>change-contactinfo</code>: Change the contactinfo field in the info.json</li>
+<li><code>change-derivedfrom</code>: Replaces the derivedfrom in the info.json...</li>
+<li><code>change-description</code>: Replaces the description in the info.json...</li>
+<li><code>change-license</code>: Replaces the license in the info.json file</li>
+<li><code>change-primerclass</code>: Change the primerclass field in the info.json</li>
+<li><code>change-status</code>: Change the status field in the info.json</li>
+<li><code>regenerate</code>: Validates the info.json and regenerate the...</li>
+<li><code>remove-author</code>: Remove an author from the authors list in...</li>
+<li><code>remove-citation</code>: Remove an citation form the authors list...</li>
+<li><code>remove-collection</code>: Remove an Collection from the Collection...</li>
+<li><code>remove-link</code>: Add a link to the selected link field to...</li>
+<li><code>reorder-authors</code>: Reorder the authors in the info.json file</li>
+</ul>
+<h3 id="primal-page-modify-add-author"><code>primal-page modify add-author</code></h3>
+<p>Append an author to the authors list in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>add-author<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>AUTHOR
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>AUTHOR</code>: The author to add  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--author-index INTEGER</code>: The 0-based index to insert the author at. Default is the end  [required]</li>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-add-citation"><code>primal-page modify add-citation</code></h3>
+<p>Append an citation to the authors list in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>add-citation<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>CITATION
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>CITATION</code>: The citation to add  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-add-collection"><code>primal-page modify add-collection</code></h3>
+<p>Add a Collection to the Collection list in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>add-collection<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>COLLECTION:<span class="o">{</span>ARTIC<span class="p">|</span>MODJADJI<span class="p">|</span>QUICK-LAB<span class="p">|</span>COMMUNITY<span class="p">|</span>WASTE-WATER<span class="p">|</span>CLINICAL-ISOLATES<span class="p">|</span>WHOLE-GENOME<span class="p">|</span>PANEL<span class="p">|</span>MULTI-TARGET<span class="o">}</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET}</code>: The Collection to add  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-add-link"><code>primal-page modify add-link</code></h3>
+<p>Add a link to the selected link field to the info.json</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>add-link<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>LINKFIELD<span class="w"> </span>LINK
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>LINKFIELD</code>: The link field to add to. protocols, validation, homepage, vendors, misc  [required]</li>
+<li><code>LINK</code>: The link to add.  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-change-contactinfo"><code>primal-page modify change-contactinfo</code></h3>
+<p>Change the contactinfo field in the info.json</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>change-contactinfo<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>CONTACTINFO
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>CONTACTINFO</code>: The contact information for this scheme. Use 'None' to remove the contact info  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-change-derivedfrom"><code>primal-page modify change-derivedfrom</code></h3>
+<p>Replaces the derivedfrom in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>change-derivedfrom<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>DERIVEDFROM
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>DERIVEDFROM</code>: The new derivedfrom. Use 'None' to remove the derivedfrom  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-change-description"><code>primal-page modify change-description</code></h3>
+<p>Replaces the description in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>change-description<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>DESCRIPTION
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>DESCRIPTION</code>: The new description. Use 'None' to remove the description  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-change-license"><code>primal-page modify change-license</code></h3>
+<p>Replaces the license in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>change-license<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>LICENSE
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>LICENSE</code>: The new license. Use 'None' show the work is not licensed (Not recommended)  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-change-primerclass"><code>primal-page modify change-primerclass</code></h3>
+<p>Change the primerclass field in the info.json</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>change-primerclass<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>PRIMERCLASS:<span class="o">{</span>primerschemes<span class="o">}</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>PRIMERCLASS:{primerschemes}</code>: The primerclass to change to  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-change-status"><code>primal-page modify change-status</code></h3>
+<p>Change the status field in the info.json</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>change-status<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span><span class="o">[</span>SCHEMESTATUS<span class="o">]</span>:<span class="o">[</span>withdrawn<span class="p">|</span>deprecated<span class="p">|</span>autogenerated<span class="p">|</span>draft<span class="p">|</span>tested<span class="p">|</span>validated<span class="o">]</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>[SCHEMESTATUS]:[withdrawn|deprecated|autogenerated|draft|tested|validated]</code>: The scheme class  [default: draft]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-regenerate"><code>primal-page modify regenerate</code></h3>
+<p>Validates the info.json and regenerate the README.md</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>regenerate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-remove-author"><code>primal-page modify remove-author</code></h3>
+<p>Remove an author from the authors list in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>remove-author<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>AUTHOR
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>AUTHOR</code>: The author to remove  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-remove-citation"><code>primal-page modify remove-citation</code></h3>
+<p>Remove an citation form the authors list in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>remove-citation<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>CITATION
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>CITATION</code>: The citation to remove  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-remove-collection"><code>primal-page modify remove-collection</code></h3>
+<p>Remove an Collection from the Collection list in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>remove-collection<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>COLLECTION:<span class="o">{</span>ARTIC<span class="p">|</span>MODJADJI<span class="p">|</span>QUICK-LAB<span class="p">|</span>COMMUNITY<span class="p">|</span>WASTE-WATER<span class="p">|</span>CLINICAL-ISOLATES<span class="p">|</span>WHOLE-GENOME<span class="p">|</span>PANEL<span class="p">|</span>MULTI-TARGET<span class="o">}</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET}</code>: The Collection to remove  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-remove-link"><code>primal-page modify remove-link</code></h3>
+<p>Add a link to the selected link field to the info.json</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>remove-link<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span>LINKFIELD<span class="w"> </span>LINK
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>LINKFIELD</code>: The link field to remove from. protocols, validation, homepage, vendors, misc  [required]</li>
+<li><code>LINK</code>: The link to remove.  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h3 id="primal-page-modify-reorder-authors"><code>primal-page modify reorder-authors</code></h3>
+<p>Reorder the authors in the info.json file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>modify<span class="w"> </span>reorder-authors<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO<span class="w"> </span><span class="o">[</span>AUTHOR_INDEX<span class="o">]</span>
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+<li><code>[AUTHOR_INDEX]</code>: The indexes in the new order, separated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h2 id="primal-page-remove"><code>primal-page remove</code></h2>
+<p>Remove a scheme's version from the repo, will also remove size and schemename directories if empty</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>primal-page<span class="w"> </span>remove<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMEINFO
+</code></pre></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>SCHEMEINFO</code>: The path to info.json  [required]</li>
+</ul>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      
+    
+  </body>
+</html>
