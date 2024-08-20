@@ -32,7 +32,7 @@
     "articbedversion": "v3.0",
     "collections": [],
     "links": {
-        "protocals": [],
+        "protocols": [],
         "validation": [],
         "homepage": [],
         "vendors": [],

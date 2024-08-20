@@ -16,6 +16,8 @@ def parse_version(
 ) -> dict[str, str]:
     version_dict = dict()
 
+    log.info(f"parsing {version_path}")
+
     # Read in the info.json file
     with open(version_path / "info.json") as f:
         info_dict = json.load(f)

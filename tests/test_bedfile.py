@@ -18,8 +18,8 @@ class TestBedfile(unittest.TestCase):
     v1bedfile = pathlib.Path("tests/test_input/v1.primer.bed")
     v2bedfile = pathlib.Path("tests/test_input/v2.primer.bed")
     v3bedfile = pathlib.Path("tests/test_input/v3.primer.bed")
-    invalidbedfile = pathlib.Path("tests/test_input/invalid.primer.bed")
-    invalidstructbedfile = pathlib.Path("tests/test_input/invalid.struct.primer.bed")
+    invalid_bedfile = pathlib.Path("tests/test_input/invalid.primer.bed")
+    invalid_struct_bedfile = pathlib.Path("tests/test_input/invalid.struct.primer.bed")
 
     def test_validate_bedfile(self):
         # Test v1
@@ -31,11 +31,11 @@ class TestBedfile(unittest.TestCase):
         self.assertEqual(validate_bedfile(self.v3bedfile), BEDFileResult.VALID)
         # Test invalid raises
         with self.assertRaises(PrimerVersionError):
-            validate_bedfile(self.invalidbedfile)
+            validate_bedfile(self.invalid_bedfile)
 
         # Test invalid structure
         with self.assertRaises(InvalidBedFileLine):
-            validate_bedfile(self.invalidstructbedfile)
+            validate_bedfile(self.invalid_struct_bedfile)
 
 
 class TestDeterminePrimernameVersion(unittest.TestCase):
@@ -122,7 +122,7 @@ class TestValidateBedfileLineStructure(unittest.TestCase):
     v1bedfile = pathlib.Path("tests/test_input/v1.primer.bed")
     v2bedfile = pathlib.Path("tests/test_input/v2.primer.bed")
     v3bedfile = pathlib.Path("tests/test_input/v3.primer.bed")
-    invalidbedfile = pathlib.Path("tests/test_input/invalid.struct.primer.bed")
+    invalid_bedfile = pathlib.Path("tests/test_input/invalid.struct.primer.bed")
 
     def test_bed_file_structure_v3(self):
         """
@@ -154,7 +154,7 @@ class TestValidateBedfileLineStructure(unittest.TestCase):
         """
         Test that the bed file structure is correct
         """
-        with open(self.invalidbedfile) as bedfile:
+        with open(self.invalid_bedfile) as bedfile:
             results = [
                 validate_bedfile_line_structure(line) for line in bedfile.readlines()
             ]

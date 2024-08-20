@@ -100,7 +100,11 @@ def write_info_json(info: Info, schemeinfo: pathlib.Path):
 
 def generate_files(info: Info, schemeinfo: pathlib.Path):
     # Write the validated info.json
-    write_info_json(info, schemeinfo / "info.json")
+
+    if schemeinfo.name != "info.json":
+        schemeinfo = schemeinfo / "info.json"
+
+    write_info_json(info, schemeinfo)
 
     # Update the README
     scheme_path = schemeinfo.parent
@@ -151,7 +155,10 @@ def remove_link(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
-            help="The path to info.json", readable=True, exists=True, writable=True
+            help="The path to info.json",
+            readable=True,
+            exists=True,
+            writable=True,
         ),
     ],
     linkfield: Annotated[
