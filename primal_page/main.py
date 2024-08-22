@@ -87,7 +87,7 @@ def validate_ref_file(ref_file: pathlib.Path):
         raise InvalidReference(f"Could not validate {ref_file}: {e}") from e
 
     for record in records.values():
-        seq_bases = set(record.seq)
+        seq_bases = set(record.seq.upper())
         # Check DNA sequence
         if not seq_bases.issubset(IUPACAmbiguousDNA):
             raise InvalidReference(
@@ -434,7 +434,10 @@ def create(
             trim_file_whitespace(valid_primer_bed, repo_dir / "primer.bed")
         # parse the reference.fasta file
         with open(repo_dir / "reference.fasta", "w") as ref_file:
-            records = SeqIO.parse(valid_ref, "fasta")
+            records = list(SeqIO.parse(valid_ref, "fasta"))
+            # Ensure the sequence is uppercase
+            for r in records:
+                r.seq = r.seq.upper()
             SeqIO.write(records, ref_file, "fasta")
 
         # Update the hashes in the info.json
