@@ -131,6 +131,8 @@ class Collection(Enum):
     WHOLE_GENOME = "WHOLE-GENOME"
     PANEL = "PANEL"
     MULTI_TARGET = "MULTI-TARGET"
+    # Other Scheme Generators
+    VARVAMP = "VARVAMP"
 
 
 class Links(BaseModel):
