@@ -280,6 +280,9 @@ def create(
         list[str], typer.Option(help="Optional miscellaneous link")
     ] = [],
     fix: Annotated[bool, typer.Option(help="Attempt to fix the scheme")] = False,
+    contact_info: Annotated[
+        Optional[str], typer.Option(help="Contact information")
+    ] = None,
 ):
     """Create a new scheme in the required format"""
 
@@ -410,6 +413,7 @@ def create(
         articbedversion=primerbed_version,
         collections=collections,
         links=links,
+        contactinfo=contact_info,
     )
 
     #####################################

@@ -181,7 +181,7 @@ This uses the 7 columns described above, alongside `V2:primernames`.
 ## Scheme Version
 
 In the form of `v{Major}.{Minor}.{Patch}`
-- Major: New scheme being generated with differant input params
+- Major: New scheme being generated with different input params
 - Minor: Change to primers. Either additional / removal of primers
 - Patch: No change to primers. Often used for rebalancing or change in formatting
 
@@ -342,6 +342,7 @@ $ primal-page create [OPTIONS] SCHEMEPATH
 * `--link-misc TEXT`: Optional miscellaneous link
 * `--fix / --no-fix`: Attempt to fix the scheme  [default: no-fix]
 * `--help`: Show this message and exit.
+* `--contact-info TEXT`: Contact information
 
 ## `primal-page download`
 
