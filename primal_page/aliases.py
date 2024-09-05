@@ -54,7 +54,7 @@ def remove(
         return
     log.info(f"Removed alias: ([blue]{removed_aliases}[/blue])")
 
-    # Write the new info.json file
+    # Write the new aliases.json file
     with open(aliases_file, "w") as f:
         json.dump(aliases, f, sort_keys=True)
 

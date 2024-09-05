@@ -56,7 +56,7 @@ class BedLine:
         self.primername = primername
         self.pool = pool
         self.strand = strand
-        self.seq = seq
+        self.seq = seq.upper()
 
         # Validate the primername
         if determine_primername_version(primername) == PrimerNameVersion.INVALID:
