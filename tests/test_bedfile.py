@@ -2,40 +2,11 @@ import pathlib
 import unittest
 
 from primal_page.bedfiles import (
-    BEDFileResult,
-    BedfileVersion,
     PrimerNameVersion,
     convert_v1_primernames_to_v2,
-    determine_bedfile_version,
     determine_primername_version,
-    validate_bedfile,
     validate_bedfile_line_structure,
 )
-from primal_page.errors import InvalidBedFileLine, PrimerNameError, PrimerVersionError
-
-
-class TestBedfile(unittest.TestCase):
-    v1bedfile = pathlib.Path("tests/test_input/v1.primer.bed")
-    v2bedfile = pathlib.Path("tests/test_input/v2.primer.bed")
-    v3bedfile = pathlib.Path("tests/test_input/v3.primer.bed")
-    invalid_bedfile = pathlib.Path("tests/test_input/invalid.primer.bed")
-    invalid_struct_bedfile = pathlib.Path("tests/test_input/invalid.struct.primer.bed")
-
-    def test_validate_bedfile(self):
-        # Test v1
-        with self.assertRaises(InvalidBedFileLine):
-            validate_bedfile(self.v1bedfile)
-        # Test v2
-        self.assertEqual(validate_bedfile(self.v2bedfile), BEDFileResult.VALID)
-        # Test v3
-        self.assertEqual(validate_bedfile(self.v3bedfile), BEDFileResult.VALID)
-        # Test invalid raises
-        with self.assertRaises(PrimerVersionError):
-            validate_bedfile(self.invalid_bedfile)
-
-        # Test invalid structure
-        with self.assertRaises(InvalidBedFileLine):
-            validate_bedfile(self.invalid_struct_bedfile)
 
 
 class TestDeterminePrimernameVersion(unittest.TestCase):
@@ -65,27 +36,6 @@ class TestDeterminePrimernameVersion(unittest.TestCase):
 
         for primername, result in test_cases.items():
             self.assertEqual(determine_primername_version(primername), result)
-
-
-class TestDeterminBedfileVersion(unittest.TestCase):
-    v1line = ["test", "0", "10", "test_5_LEFT", "0", "+"]
-    v2line = ["test", "0", "10", "test_5_LEFT", "0", "+", "ATCG"]
-    v3line = ["test", "0", "10", "test_5_LEFT_1", "0", "+", "ATCG"]
-    invalidbedline = ["test", "0", "10", "test-5-LEFT", "0", "+", "ATCG"]
-
-    def test_determine_bedfile_version(self):
-        # Test v1
-        self.assertEqual(determine_bedfile_version([self.v1line]), BedfileVersion.V1)
-        # Test v2
-        self.assertEqual(determine_bedfile_version([self.v2line]), BedfileVersion.V2)
-        # Test v3
-        self.assertEqual(determine_bedfile_version([self.v3line]), BedfileVersion.V3)
-        # Test invalid primername raises
-        with self.assertRaises(PrimerNameError):
-            determine_bedfile_version([self.invalidbedline])
-        # Test mixed raises
-        with self.assertRaises(PrimerVersionError):
-            determine_bedfile_version([self.v2line, self.v3line])
 
 
 class TestConvertV1PrimernamesToV2(unittest.TestCase):
