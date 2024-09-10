@@ -13,7 +13,31 @@ From primalscheme a file should be output called `{scheme-name}.primer.bed`. Thi
 
 ![primerbed](assets/primalscheme1bed.png)
 
+### Using `primal-page`
 
+![primerbed](assets/primal-page-create.png)
+
+`primal-page` provides lots of options for creating the metadata. However, most of these are optional.
+
+#### Required options
+| Option               | Description                                    |
+| -------------------- | ---------------------------------------------- |
+| `--schemename`       | The name of the scheme                         |
+| `--ampliconsize`     | The amplicon size                             |
+| `--schemeversion`    | The version of the scheme                      |
+| `--species`          | The `taxid` of the target species              |
+| `--authors`          | The authors of the scheme                      |
+| `--schemestatus`     | The status of the scheme                       |
+| `--primerbed`        | A .bed file containing the primers             |
+| `--reference`        | A .fasta file containing the reference genomes |
+| `--output`           | Where to create the files                      |
+| `--algorithmversion` | Which version was used (`primalscheme1`)       |
+
+The requirements of these settings are listed in the [cli](cli.md)
+
+```
+primal-page create --schemename example-scheme --ampliconsize 400 --schemeversion v1.0.0 --species 1 --authors 'John Smith'  --authors 'Jane Doe' --schemestatus draft --primerbed {path to file} --reference {path to file} --output {~/primerschemes/primerschemes} --algorithmversion primalscheme1
+```
 
 
 ## Manual editing of files

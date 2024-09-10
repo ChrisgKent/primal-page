@@ -109,14 +109,14 @@ def create(
     primerbed: Annotated[
         pathlib.Path,
         typer.Option(
-            help="Manually specify the primer bed file, default is *primer.bed",
+            help="The path to the primer.bed file",
             readable=True,
         ),
     ],
     reference: Annotated[
         pathlib.Path,
         typer.Option(
-            help="Manually specify the reference.fasta file, default is *.fasta",
+            help="The path to the reference.fasta file",
             readable=True,
         ),
     ],
