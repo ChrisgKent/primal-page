@@ -4,17 +4,14 @@ import pathlib
 
 import typer
 from Bio import SeqIO
+from primalbedtools.bedfiles import BedFileModifier, BedLineParser
 from typing_extensions import Annotated
 
-from primal_page.bedfiles import (
-    determine_bedfile_version,
-    regenerate_v3_bedfile,
-)
+from primal_page.bedfiles import BedfileVersion
 from primal_page.logging import log
-from primal_page.modify import generate_files, hash_file, trim_file_whitespace
+from primal_page.modify import generate_files, hash_file
 from primal_page.schemas import (
     INFO_SCHEMA,
-    BedfileVersion,
     Info,
 )
 
@@ -49,7 +46,10 @@ def regenerate(
     info_json = json.load(schemeinfo.open())
 
     # Trim whitespace from primer.bed and reference.fasta
-    trim_file_whitespace(scheme_path / "primer.bed", scheme_path / "primer.bed")
+    headers, bedlines = BedLineParser().from_file(scheme_path / "primer.bed")
+    bedlines = BedFileModifier.sort_bedlines(bedlines)
+    bedlines = BedFileModifier.update_primernames(bedlines)
+    BedLineParser().to_file(scheme_path / "primer.bed", headers, bedlines)
 
     # Hash the reference.fasta file
     # If the hash is different, rewrite the file
@@ -62,7 +62,7 @@ def regenerate(
             ref_file.write(ref_str)
 
     # if articbedversion not set then set it
-    articbedversion = determine_bedfile_version(scheme_path / "primer.bed")
+    articbedversion = BedfileVersion.V3
     if articbedversion == BedfileVersion.INVALID:
         raise typer.BadParameter(
             f"Could not determine artic-primerbed version for {scheme_path / 'primer.bed'}"
@@ -106,7 +106,10 @@ def migrate(
                 info = schemeversion / "info.json"
                 if info.exists():
                     # Modify the primer.bed
-                    bedfile_str = regenerate_v3_bedfile(schemeversion / "primer.bed")
+                    headers, bedlines = BedLineParser().from_file(
+                        schemeversion / "primer.bed"
+                    )
+                    bedfile_str = BedLineParser.to_str(headers, bedlines)
 
                     # If the bedfile is the same, dont write it
                     if bedfile_str == (schemeversion / "primer.bed").read_text():
