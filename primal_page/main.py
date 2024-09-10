@@ -105,7 +105,12 @@ def create(
             help="The species this scheme targets. Please use NCBI taxonomy ids"
         ),
     ],
-    authors: Annotated[list[str], typer.Option(help="Any authors")],
+    authors: Annotated[
+        list[str],
+        typer.Option(
+            help="Any authors. To provide multiple, use --authors '1' --authors '2'"
+        ),
+    ],
     primerbed: Annotated[
         pathlib.Path,
         typer.Option(
@@ -150,7 +155,10 @@ def create(
         PrimerClass, typer.Option(help="The primer class")
     ] = PrimerClass.PRIMERSCHEMES.value,  # type: ignore
     collection: Annotated[
-        Optional[list[Collection]], typer.Option(help="The collection")
+        Optional[list[Collection]],
+        typer.Option(
+            help="The collection tags. To provide multiple, use --collection '1' --collection '2'"
+        ),
     ] = None,
     link_protocol: Annotated[
         list[str], typer.Option(help="Optional link to protocol")
