@@ -33,6 +33,8 @@ from primal_page.schemas import (
     PrimerClass,
     SchemeStatus,
 )
+from primal_page.validate import app as validate_app
+from primal_page.validate import validate_bedfile
 
 # Create the typer app
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
@@ -48,6 +50,7 @@ app.add_typer(
 )
 app.add_typer(dev_app, name="dev", help="Development commands", hidden=True)
 app.add_typer(aliases_app, name="aliases", help="Manage aliases")
+app.add_typer(validate_app, name="validate", help="Validate a scheme")
 
 
 def typer_callback_version(value: bool):
@@ -290,6 +293,10 @@ def create(
     try:
         # Write the primer.bed file
         BedLineParser().to_file(repo_dir / "primer.bed", headers, bedlines)
+
+        # validate the bedfile
+        # let the exception bubble up
+        validate_bedfile(repo_dir / "primer.bed")
 
         # Write the reference.fasta file records
         with open(repo_dir / "reference.fasta", "w") as ref_file:
