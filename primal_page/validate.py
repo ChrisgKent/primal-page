@@ -5,6 +5,7 @@ from click import UsageError
 from primalbedtools.bedfiles import BedLineParser, PrimerNameVersion, group_primer_pairs
 from typing_extensions import Annotated
 
+from primal_page.modify import hash_file
 from primal_page.schemas import (
     Info,
 )
@@ -97,6 +98,25 @@ def validate_bedfile(bedpath: pathlib.Path, strict: bool = True):
             )
 
 
+def validate_hashes(infopath: pathlib.Path):
+    # Read in the info.json
+    info = Info.model_validate_json(infopath.read_text())
+    info_scheme_path = (
+        info.schemename + "/" + str(info.ampliconsize) + "/" + info.schemeversion
+    )
+
+    # Check the hashes
+    if info.primer_bed_md5 != hash_file(infopath.parent / "primer.bed"):
+        raise ValueError(
+            f"MD5 mismatch for {info_scheme_path}:primer.bed: info ({info.primer_bed_md5}) != file ({hash_file(infopath.parent / 'primer.bed')})"
+        )
+
+    if info.reference_fasta_md5 != hash_file(infopath.parent / "reference.fasta"):
+        raise ValueError(
+            f"MD5 mismatch for {info_scheme_path}:reference.fasta: info ({info.reference_fasta_md5}) != file ({hash_file(infopath.parent / 'reference.fasta')})"
+        )
+
+
 @app.command(no_args_is_help=True)
 def scheme(
     schemeinfo: Annotated[
@@ -115,6 +135,7 @@ def scheme(
         validate_name(schemeinfo)
         bedfile = schemeinfo.parent / "primer.bed"
         validate_bedfile(bedfile)
+        validate_hashes(schemeinfo)
     except Exception as e:
         raise UsageError(message=str(e)) from e
 
@@ -144,6 +165,11 @@ def directory(
         try:
             bedfile = schemeinfo.parent / "primer.bed"
             validate_bedfile(bedfile)
+        except Exception as e:
+            errors.append(str(e))
+
+        try:
+            validate_hashes(schemeinfo)
         except Exception as e:
             errors.append(str(e))
 
