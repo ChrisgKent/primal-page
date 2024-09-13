@@ -4,8 +4,6 @@
 
 ## Overviews
 
-![MN908947.3.png](work/MN908947.3.png)
-
 ## Details
 
 ```json
@@ -22,7 +20,7 @@
     "authors": [
         "artic"
     ],
-    "algorithmversion": "primalscheme3:1.0.0",
+    "algorithmversion": "primalscheme-test",
     "species": [
         10
     ],

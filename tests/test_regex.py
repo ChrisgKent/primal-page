@@ -18,6 +18,47 @@ from primal_page.schemas import (
 )
 
 
+class TestValidateSchemeVersion(unittest.TestCase):
+    def test_validate_schemeversion_valid(self):
+        """
+        Tests main/VERSION_PATTERN for valid scheme names
+        """
+        valid_versions = [
+            "v1.0.0",
+            "v2.3.4",
+            "v10.20.30",
+            "v1.0.0-beta",
+            "v1.0.0-alpha",
+            "v1.0.0-alpha1",
+        ]
+
+        for version in valid_versions:
+            self.assertEqual(validate_schemeversion(version), version)
+
+    def test_validate_schemeversion_invalid(self):
+        """
+        Tests main/VERSION_PATTERN for invalid scheme names
+        """
+        invalid_versions = [
+            "v1",
+            "v2.3",
+            "v10.20",
+            "v1.0.0.0",
+            "V1",
+            "artic-v1.0.0",
+            "v1.0.0-",
+            "v1.0.0-!",
+            "v1.0.0-alpha!",
+            "v1.0.0-A",
+            "v1.0.0_alpha",
+            "v1.0.0.alpha",
+        ]
+
+        for version in invalid_versions:
+            with self.assertRaises(InvalidSchemeVersion):
+                validate_schemeversion(version)
+
+
 class TestRegex(unittest.TestCase):
     def test_SchemeNamePattern_valid(self):
         """
@@ -48,37 +89,6 @@ class TestRegex(unittest.TestCase):
         for name in invalid_names:
             with self.assertRaises(InvalidSchemeName):
                 validate_schemename(name)
-
-    def test_VersionPattern_ValidVersions(self):
-        """
-        Tests main/VERSION_PATTERN for valid scheme names
-        """
-        valid_versions = [
-            "v1.0.0",
-            "v2.3.4",
-            "v10.20.30",
-        ]
-
-        for version in valid_versions:
-            self.assertEqual(validate_schemeversion(version), version)
-
-    def test_VersionPattern_InvalidVersions(self):
-        """
-        Tests main/VERSION_PATTERN for invalid scheme names
-        """
-        invalid_versions = [
-            "v1",
-            "v2.3",
-            "v10.20",
-            "v1.0.0.0",
-            "v1.0.0-beta",
-            "V1",
-            "artic-v1.0.0",
-        ]
-
-        for version in invalid_versions:
-            with self.assertRaises(InvalidSchemeVersion):
-                validate_schemeversion(version)
 
     def test_V1PrimerName_ValidNames(self):
         """

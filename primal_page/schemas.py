@@ -15,7 +15,7 @@ from primal_page.errors import (
 INFO_SCHEMA = "v2.0.0"
 
 SCHEMENAME_PATTERN = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
-VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"
+VERSION_PATTERN = r"^v\d+\.\d+\.\d+(-[a-z0-9]+)?$"
 DOI_PATTERN = r"^(https:\/\/|dx.)*(doi.org\/|doi:)10.\d+\/.*$"
 
 
@@ -70,9 +70,13 @@ def validate_scheme_id(schemeid) -> tuple[str, str, str]:
 
 
 def validate_schemeversion(version: str) -> str:
+    """
+    Validate the schemeversion. Must be in the form of v(int).(int).(int) with optional suffix -[a-z0-9].
+    :raises InvalidSchemeVersion: if the schemeversion is invalid
+    """
     if not re.match(VERSION_PATTERN, version):
         raise InvalidSchemeVersion(
-            f"Invalid version: ({version}). Must match be in form of v(int).(int).(int)"
+            f"Invalid version: ({version}). Must match be in form of v(int).(int).(int) with optional suffix -[a-z0-9]"
         )
     return version
 
@@ -127,6 +131,8 @@ class Collection(Enum):
     WHOLE_GENOME = "WHOLE-GENOME"
     PANEL = "PANEL"
     MULTI_TARGET = "MULTI-TARGET"
+    # Other Scheme Generators
+    VARVAMP = "VARVAMP"
 
 
 class Links(BaseModel):

@@ -1,32 +1,29 @@
 import json
 import pathlib
 import shutil
-from enum import Enum
 from typing import Optional
 
 import typer
-from Bio import SeqIO
+from Bio import SeqIO, SeqRecord
+from primalbedtools.bedfiles import (
+    BedFileModifier,
+    BedLineParser,
+    PrimerNameVersion,
+)
 from typing_extensions import Annotated
 
 from primal_page.__init__ import __version__
 from primal_page.aliases import app as aliases_app
-from primal_page.bedfiles import (
-    BEDFileResult,
-    BedfileVersion,
-    determine_bedfile_version,
-    regenerate_v3_bedfile,
-    validate_bedfile,
-)
+from primal_page.bedfiles import BedfileVersion
 from primal_page.build_index import create_index
 from primal_page.dev import app as dev_app
 from primal_page.download import app as download_app
-from primal_page.errors import FileNotFound, InvalidReference, SchemeExists
+from primal_page.errors import InvalidReference, SchemeExists
 from primal_page.logging import log
 from primal_page.modify import app as modify_app
 from primal_page.modify import (
     generate_files,
     hash_file,
-    trim_file_whitespace,
 )
 from primal_page.schemas import (
     Collection,
@@ -36,12 +33,6 @@ from primal_page.schemas import (
     PrimerClass,
     SchemeStatus,
 )
-
-
-class FindResult(Enum):
-    NOT_FOUND = 1
-    FOUND = 2
-
 
 # Create the typer app
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
@@ -74,129 +65,26 @@ def primal_page(
     pass
 
 
-def validate_ref_file(ref_file: pathlib.Path):
+def validate_ref_records(ref_records: list[SeqRecord.SeqRecord]):
     """
     Validate the reference.fasta file
     :param ref_file: The path to the reference.fasta file
     :raises InvalidReference: If the reference.fasta file is invalid
     """
-    # Very simple fasta validation
-    try:
-        records = SeqIO.index(ref_file, "fasta")
-    except Exception as e:
-        raise InvalidReference(f"Could not validate {ref_file}: {e}") from e
 
-    for record in records.values():
-        seq_bases = set(record.seq.upper())
+    for record in ref_records:
         # Check DNA sequence
+        seq_bases = set(record.seq)
         if not seq_bases.issubset(IUPACAmbiguousDNA):
             raise InvalidReference(
-                f"Invalid DNA bases ({', '.join(seq_bases.difference(IUPACAmbiguousDNA))}) found in {ref_file}: {record.id}"
+                f"Invalid DNA bases ({', '.join(seq_bases.difference(IUPACAmbiguousDNA))}) found in {record.id}"
             )
         if len(record.seq) == 0:
-            raise InvalidReference(f"Empty sequence found in {ref_file}")
-
-
-def find_ref(
-    cli_reference: pathlib.Path | None,
-    found_files: list[pathlib.Path],
-    schemepath: pathlib.Path,
-) -> pathlib.Path:
-    """
-    Find the reference.fasta file
-    :param cli_reference: The reference.fasta file specified by the user. None if not specified
-    :param found_files: A list of all files found in the scheme directory
-    :param schemepath: The path to the scheme directory
-    :return: The path to the reference.fasta file
-    :raises FileNotFound: If the reference.fasta file cannot be found
-    """
-    # Search for reference.fasta
-    if cli_reference is None:  # No reference specified
-        # Search for a single *.fasta
-        reference_list: list[pathlib.Path] = [
-            path for path in found_files if path.name == ("reference.fasta")
-        ]
-        if len(reference_list) == 1:
-            return reference_list[0]
-        else:
-            raise FileNotFound(
-                f"Could not find a SINGLE reference.fasta file in {schemepath} or its subdirectories, found {len(reference_list)}. Please specify manually with --reference"
-            )
-    elif cli_reference.exists():
-        validate_ref_file(cli_reference)
-        return cli_reference
-    else:
-        raise FileNotFound(f"Could not find file at {cli_reference}")
-
-
-def find_primerbed(
-    cli_primerbed: pathlib.Path | None,
-    found_files: list[pathlib.Path],
-    schemepath: pathlib.Path,
-) -> pathlib.Path:
-    """
-    Find the primer.bed file
-    :param cli_primerbed: The primer.bed file specified by the user. None if not specified
-    :param found_files: A list of all files found in the scheme directory
-    :param schemepath: The path to the scheme directory
-    :return: The path to the primer.bed file
-    :raises FileNotFound: If the primer.bed file cannot be found
-    """
-    # Search for primer.bed
-    if cli_primerbed is None:  # No primer.bed specified
-        # Search for a single *.primer.bed
-        primer_bed_list: list[pathlib.Path] = [
-            path for path in found_files if path.name.endswith("primer.bed")
-        ]
-        if len(primer_bed_list) == 1:
-            return primer_bed_list[0]
-        else:
-            raise FileNotFound(
-                f"Could not find a SINGLE *.primer.bed file in {schemepath} or its subdirectories, found {len(primer_bed_list)}. Please specify manually with --primerbed"
-            )
-    elif cli_primerbed.exists():
-        return cli_primerbed
-    else:
-        raise FileNotFound(f"Could not find file at {cli_primerbed}")
-
-
-def find_config(
-    cli_config: pathlib.Path | None,
-    found_files: list[pathlib.Path],
-    schemepath: pathlib.Path,
-) -> tuple[FindResult, pathlib.Path | None]:
-    """
-    Find the config.json file
-    :param cli_config: The config.json file specified by the user. None if not specified
-    :param found_files: A list of all files found in the scheme directory
-    :param schemepath: The path to the scheme directory
-    :return: The path to the config.json file
-    """
-    # Search for config.json
-    if cli_config is None:  # No config.json specified
-        # Search for a single config.json
-        config_list: list[pathlib.Path] = [
-            path for path in found_files if path.name == ("config.json")
-        ]
-        match len(config_list):
-            case 1:
-                return (FindResult.FOUND, config_list[0])
-            case _:
-                return (FindResult.NOT_FOUND, None)
-
-    elif cli_config.exists():
-        # TODO validate the config.json file
-        return (FindResult.FOUND, cli_config)
-    else:
-        return (FindResult.NOT_FOUND, None)
+            raise InvalidReference(f"Empty sequence found in {record.id}")
 
 
 @app.command(no_args_is_help=True)
 def create(
-    schemepath: Annotated[
-        pathlib.Path,
-        typer.Argument(help="The path to the primerscheme directory", readable=True),
-    ],
     schemename: Annotated[
         str,
         typer.Option(help="The name of the scheme"),
@@ -217,27 +105,32 @@ def create(
             help="The species this scheme targets. Please use NCBI taxonomy ids"
         ),
     ],
-    authors: Annotated[list[str], typer.Option(help="Any authors")],
+    authors: Annotated[
+        list[str],
+        typer.Option(
+            help="Any authors. To provide multiple, use --authors '1' --authors '2'"
+        ),
+    ],
+    primerbed: Annotated[
+        pathlib.Path,
+        typer.Option(
+            help="The path to the primer.bed file",
+            readable=True,
+        ),
+    ],
+    reference: Annotated[
+        pathlib.Path,
+        typer.Option(
+            help="The path to the reference.fasta file",
+            readable=True,
+        ),
+    ],
     schemestatus: Annotated[
         SchemeStatus, typer.Option(help="Scheme status")
     ] = SchemeStatus.DRAFT.value,  # type: ignore
     citations: Annotated[
         list[str], typer.Option(help="Any associated citations. Please use DOI")
     ] = [],
-    primerbed: Annotated[
-        Optional[pathlib.Path],
-        typer.Option(
-            help="Manually specify the primer bed file, default is *primer.bed",
-            readable=True,
-        ),
-    ] = None,
-    reference: Annotated[
-        Optional[pathlib.Path],
-        typer.Option(
-            help="Manually specify the reference.fasta file, default is *.fasta",
-            readable=True,
-        ),
-    ] = None,
     output: Annotated[
         pathlib.Path,
         typer.Option(help="Where to output the scheme", writable=True),
@@ -262,7 +155,10 @@ def create(
         PrimerClass, typer.Option(help="The primer class")
     ] = PrimerClass.PRIMERSCHEMES.value,  # type: ignore
     collection: Annotated[
-        Optional[list[Collection]], typer.Option(help="The collection")
+        Optional[list[Collection]],
+        typer.Option(
+            help="The collection tags. To provide multiple, use --collection '1' --collection '2'"
+        ),
     ] = None,
     link_protocol: Annotated[
         list[str], typer.Option(help="Optional link to protocol")
@@ -280,54 +176,58 @@ def create(
         list[str], typer.Option(help="Optional miscellaneous link")
     ] = [],
     fix: Annotated[bool, typer.Option(help="Attempt to fix the scheme")] = False,
+    contact_info: Annotated[
+        Optional[str], typer.Option(help="Contact information")
+    ] = None,
+    additional_files: Annotated[
+        list[pathlib.Path],
+        typer.Option(help="Additional files to include in the ./work directory"),
+    ] = [],
 ):
     """Create a new scheme in the required format"""
 
-    # Search for scheme repo for files
-    found_files = [x for x in schemepath.rglob("*")]
+    # Parse the primer.bed file
+    try:
+        headers, bedlines = BedLineParser().from_file(primerbed)
+    except ValueError as e:
+        raise typer.BadParameter(f"Error parsing {primerbed}: {e}") from e
+    bedlines = BedFileModifier.sort_bedlines(bedlines)
 
-    # Check for a single primer.bed file
-    valid_primer_bed = find_primerbed(
-        cli_primerbed=primerbed, found_files=found_files, schemepath=schemepath
-    )
+    # get all primername versions
+    primer_name_versions_to_name: dict[PrimerNameVersion, str] = {
+        line.primername_version: line.primername for line in bedlines
+    }
 
-    match validate_bedfile(valid_primer_bed):
-        case BEDFileResult.VALID:
-            pass
-        case BEDFileResult.INVALID_VERSION:
-            raise typer.BadParameter(
-                f"Could not determine primerbed version for {valid_primer_bed}"
-            )
-        case BEDFileResult.INVALID_STRUCTURE:
-            raise typer.BadParameter(
-                f"Invalid primerbed structure for {valid_primer_bed}. Please ensure it is a valid 7 column bedfile"
-            )
-    # Get primerbed version
-    primerbed_version: BedfileVersion = determine_bedfile_version(valid_primer_bed)
+    if (
+        len(primer_name_versions_to_name) > 1
+        or PrimerNameVersion.V2 not in primer_name_versions_to_name
+    ) and not fix:
+        raise typer.BadParameter(
+            f"Primernames ({[v for k, v in primer_name_versions_to_name.items() if k != PrimerNameVersion.V2]})"
+            " are not in the correct format. Please update or try with --fix to attempt to parse."
+        )
 
-    if primerbed_version != BedfileVersion.V3:
-        if fix:
-            try:
-                bedfile_str = regenerate_v3_bedfile(valid_primer_bed)
-            except Exception as e:
-                raise typer.BadParameter(
-                    f"Could not fix the primerbed file: {e}"
-                ) from e
-        else:
-            raise typer.BadParameter(
-                f"Primerbed version {primerbed_version.value} is not supported. Please update to v3.0 bedfile (See FAQ), or try with --fix to attempt to parse."
-            )
+    if fix:
+        # Attempt to fix the primer.bed file
+        bedlines = BedFileModifier.update_primernames(bedlines)
 
     # Find the reference.fasta file
-    valid_ref = find_ref(reference, found_files, schemepath)
+    reference_records = list(SeqIO.parse(reference, "fasta"))
+
+    if len(reference_records) == 0:
+        raise InvalidReference(f"Empty reference file {reference}")
+
+    for record in reference_records:
+        record.seq = record.seq.upper()
+
+    # Validate the reference.fasta file
+    validate_ref_records(reference_records)
 
     # Search for config.json
-    status, conf_path = find_config(configpath, found_files, schemepath)
-    config_json: None | dict = None  # type: ignore
-    if status == FindResult.FOUND and conf_path is not None:  # Second check is for mypy
-        configpath = conf_path
-        # Read in the config
-        config_json: dict = json.load(configpath.open())
+    config_json: None | dict = None
+    if configpath is not None:
+        config_json = json.load(configpath.open())
+        assert isinstance(config_json, dict)
         # Remove some paths from the config
         config_json.pop("output_dir", None)
         # These hashes are no longer used, so remove to prevent confusion
@@ -335,50 +235,11 @@ def create(
         for k in md5s_keys_to_remove:
             config_json.pop(k)
 
-        if algorithmversion is None:
-            if "algorithmversion" in config_json.keys():
-                algorithmversion = str(config_json["algorithmversion"])
-            else:
-                raise typer.BadParameter(
-                    f"algorithmversion not specified in {configpath}. Please specify manually with --algorithmversion"
-                )
-
-    elif status == FindResult.NOT_FOUND:
-        if algorithmversion is None:
-            raise FileNotFound(
-                f"Could not find a config.json file in {schemepath}. Please specify manually with --configpath or specify algorithmversion with --algorithmversion"
-            )
-
     # Multiple pngs/htmls/msas are allowed
     # The single check is mainly to prevent multiple schemes via providing the wrong directory
     # At this point we know we have a single scheme, due to having a single primer.bed, reference.fasta, and config.json
 
-    # Search for pngs
-    pngs = [path for path in found_files if path.name.endswith(".png")]
-    # Search for html
-    htmls = [path for path in found_files if path.name.endswith(".html")]
-    # Search for msas
-    msas = [
-        path
-        for path in found_files
-        if path.name.endswith(".fasta") and path.name != "reference.fasta"
-    ]
-
-    # Copy all additional files to working directory
-    # This is done to prevent preserve the original files
-    misc_files_to_copy = [
-        x
-        for x in found_files
-        if not x.name.endswith("primer.bed")
-        and not x.name.endswith("config.json")
-        and not x.name.endswith("info.json")
-        and not x.name.endswith(".fasta")
-        and not x.name.endswith(".png")
-        and not x.name.endswith(".html")
-        and not x.name.endswith(".db")  # Dont copy the mismatches db
-        and x.name != ".DS_Store"  # Dont copy the macos file
-        and x.is_file()
-    ]
+    pngs = [path for path in additional_files if path.name.endswith(".png")]
 
     # Create the collections set
     collections = {x for x in collection} if collection is not None else set()
@@ -407,9 +268,10 @@ def create(
         description=description,
         derivedfrom=derivedfrom,
         primerclass=primerclass,
-        articbedversion=primerbed_version,
+        articbedversion=BedfileVersion.V3,
         collections=collections,
         links=links,
+        contactinfo=contact_info,
     )
 
     #####################################
@@ -426,19 +288,12 @@ def create(
     # If this fails it will deleted the half completed scheme
     # Need to check the repo doesn't already exist
     try:
-        # Copy files and trim whitespace
-        if fix:
-            with open(repo_dir / "primer.bed", "w") as bedfile:
-                bedfile.write(bedfile_str)
-        else:
-            trim_file_whitespace(valid_primer_bed, repo_dir / "primer.bed")
-        # parse the reference.fasta file
+        # Write the primer.bed file
+        BedLineParser().to_file(repo_dir / "primer.bed", headers, bedlines)
+
+        # Write the reference.fasta file records
         with open(repo_dir / "reference.fasta", "w") as ref_file:
-            records = list(SeqIO.parse(valid_ref, "fasta"))
-            # Ensure the sequence is uppercase
-            for r in records:
-                r.seq = r.seq.upper()
-            SeqIO.write(records, ref_file, "fasta")
+            SeqIO.write(reference_records, ref_file, "fasta")
 
         # Update the hashes in the info.json
         info.primer_bed_md5 = hash_file(repo_dir / "primer.bed")
@@ -453,21 +308,11 @@ def create(
                 json.dump(config_json, configfile, indent=4, sort_keys=True)
 
         # Copy over misc files
-        for misc_file in misc_files_to_copy:
-            shutil.copy(misc_file, working_dir / misc_file.name)
-
-        # Copy the pngs
-        for png in pngs:
-            shutil.copy(png, working_dir / png.name)
-        # Copy the htmls
-        for html in htmls:
-            shutil.copy(html, working_dir / html.name)
-        # Copy the msas
-        for msa in msas:
-            shutil.copy(msa, working_dir / msa.name)
+        for file in additional_files:
+            shutil.copy(file, working_dir / file.name)
 
         # Write out the info.json and readme
-        generate_files(info, repo_dir)
+        generate_files(info, repo_dir, pngs=pngs)
 
     except Exception as e:
         # Cleanup

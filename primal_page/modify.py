@@ -98,7 +98,7 @@ def write_info_json(info: Info, schemeinfo: pathlib.Path):
     log.debug(f"Regenerated info.json for {info.get_schemepath()}")
 
 
-def generate_files(info: Info, schemeinfo: pathlib.Path):
+def generate_files(info: Info, schemeinfo: pathlib.Path, pngs: list[pathlib.Path] = []):
     # Write the validated info.json
 
     if schemeinfo.name != "info.json":
@@ -108,7 +108,6 @@ def generate_files(info: Info, schemeinfo: pathlib.Path):
 
     # Update the README
     scheme_path = schemeinfo.parent
-    pngs = [path for path in scheme_path.rglob("*.png")]
     regenerate_readme(scheme_path, info, pngs)
 
 
