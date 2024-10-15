@@ -4,7 +4,7 @@ import sys
 
 from primal_page.logging import log
 from primal_page.modify import hash_file
-from primal_page.schemas import PrimerClass
+from primal_page.schemas import Info, PrimerClass
 
 
 def create_rawlink(repo, scheme_name, length, version, file, pclass) -> str:
@@ -19,24 +19,25 @@ def parse_version(
     log.info(f"parsing {version_path}")
 
     # Read in the info.json file
-    with open(version_path / "info.json") as f:
-        info_dict = json.load(f)
+    info = Info.model_validate_json((version_path / "info.json").read_text())
+
+    schemeid = info.get_schemepath()
 
     # Grab index.json fields
-    version_dict["algorithmversion"] = info_dict["algorithmversion"]
-    version_dict["status"] = info_dict["status"]
-    version_dict["authors"] = info_dict["authors"]
-    version_dict["citations"] = info_dict["citations"]
-    version_dict["species"] = info_dict["species"]
-    version_dict["license"] = info_dict["license"]
-    version_dict["primerclass"] = info_dict["primerclass"]
-    version_dict["schemename"] = info_dict["schemename"]
-    version_dict["schemeversion"] = info_dict["schemeversion"]
-    version_dict["ampliconsize"] = info_dict["ampliconsize"]
-    version_dict["articbedversion"] = info_dict["articbedversion"]
+    version_dict["algorithmversion"] = info.algorithmversion
+    version_dict["status"] = info.status.value
+    version_dict["authors"] = info.authors
+    version_dict["citations"] = list(info.citations)
+    version_dict["species"] = sorted(info.species)
+    version_dict["license"] = info.license
+    version_dict["primerclass"] = info.primerclass.value
+    version_dict["schemename"] = info.schemename
+    version_dict["schemeversion"] = info.schemeversion
+    version_dict["ampliconsize"] = info.ampliconsize
+    version_dict["articbedversion"] = info.articbedversion.value
 
-    # Add a check for collections in the info.json file
-    version_dict["collections"] = info_dict.get("collections", {})
+    if info.refselect:  # Only add if it exists
+        version_dict["refselect"] = info.refselect
 
     # Add the primer.bed file
     primerbed = version_path / "primer.bed"
@@ -58,13 +59,13 @@ def parse_version(
     )
 
     # Check the hashes in the info.json file match the generated hashes
-    if version_dict["primer_bed_md5"] != info_dict["primer_bed_md5"]:
+    if version_dict["primer_bed_md5"] != info.primer_bed_md5:
         raise ValueError(
-            f"Hash mismatch for {version_dict['primer_bed_md5']}. Expected {version_dict['primer_bed_md5']} but got {info_dict['primer_bed_md5']}"
+            f"MD5 mismatch for {schemeid}:primer.bed: info ({info.primer_bed_md5}) != file ({version_dict["primer_bed_md5"]})"
         )
-    if version_dict["reference_fasta_md5"] != info_dict["reference_fasta_md5"]:
+    if version_dict["reference_fasta_md5"] != info.reference_fasta_md5:
         raise ValueError(
-            f"Hash mismatch for {version_dict['reference_fasta_md5']}. Expected {version_dict['reference_fasta_md5']} but got {info_dict['reference_fasta_md5']}"
+            f"MD5 mismatch for {schemeid}:reference.fasta: info ({info.reference_fasta_md5}) != file ({version_dict["reference_fasta_md5"]})"
         )
 
     return version_dict
@@ -227,7 +228,7 @@ def create_index(
         )
 
     with open(parent_dir / "index.json", "w") as f:
-        json.dump(json_dict, f, indent=1, sort_keys=True)
+        json.dump(json_dict, f, sort_keys=True, separators=(",", ":"))
 
     return True
 
