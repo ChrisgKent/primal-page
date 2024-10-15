@@ -5,10 +5,9 @@ from click import UsageError
 from primalbedtools.bedfiles import BedLineParser, PrimerNameVersion, group_primer_pairs
 from typing_extensions import Annotated
 
+from primal_page.logging import log
 from primal_page.modify import hash_file
-from primal_page.schemas import (
-    Info,
-)
+from primal_page.schemas import Info, validate_ref_select_file
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -99,6 +98,9 @@ def validate_bedfile(bedpath: pathlib.Path, strict: bool = True):
 
 
 def validate_hashes(infopath: pathlib.Path):
+    """
+    Reads in the info.json and checks the hashes for ./primer.bed and ./reference.fasta
+    """
     # Read in the info.json
     info = Info.model_validate_json(infopath.read_text())
     info_scheme_path = (
@@ -117,6 +119,35 @@ def validate_hashes(infopath: pathlib.Path):
         )
 
 
+def validate_ref_selection(infopath: pathlib.Path):
+    # Read in the info.json
+    info = Info.model_validate_json(infopath.read_text())
+    info_scheme_path = (
+        info.schemename + "/" + str(info.ampliconsize) + "/" + info.schemeversion
+    )
+
+    # Check the ref-selection
+    if info.refselect is None:
+        return
+
+    for chrom, data in info.refselect.items():
+        file_path = infopath.parent / data["filename"]
+        # Check the file exists
+        if not file_path.is_file():
+            raise FileNotFoundError(f"{file_path} is not a file")
+
+        # Check the md5
+        file_md5 = hash_file(file_path)
+        if data["md5"] != file_md5:
+            raise ValueError(
+                f"MD5 mismatch for {info_scheme_path}:{chrom}: info ({data['md5']}) != file ({file_md5})"
+            )
+        # Revalidate the ref-select file
+        validate_ref_select_file(
+            info=info, chrom=chrom, ref_select=file_path, infopath=infopath
+        )
+
+
 @app.command(no_args_is_help=True)
 def scheme(
     schemeinfo: Annotated[
@@ -129,19 +160,41 @@ def scheme(
     ],
 ):
     """
-    Validate a scheme
+    Validate a single scheme
     """
+
+    # Get the schemename
+    scheme_name = f"{schemeinfo.parent.parent.parent.name}/{schemeinfo.parent.parent.name}/{schemeinfo.parent.name}"
+
+    errors = []
+
     try:
         validate_name(schemeinfo)
+    except Exception as e:
+        errors.append(str(e))
+    try:
         bedfile = schemeinfo.parent / "primer.bed"
         validate_bedfile(bedfile)
+    except Exception as e:
+        errors.append(str(e))
+    try:
         validate_hashes(schemeinfo)
     except Exception as e:
-        raise UsageError(message=str(e)) from e
+        errors.append(str(e))
+    try:
+        validate_ref_selection(schemeinfo)
+    except Exception as e:
+        errors.append(str(e))
+
+    if errors:
+        log.error(f"[red]Errored[/red]:\t[blue]{scheme_name}[/blue]")
+        raise UsageError(message="\n".join(errors))
+    else:
+        log.info(f"[green]Success[/green]:\t[blue]{scheme_name}[/blue]")
 
 
 @app.command(no_args_is_help=True)
-def directory(
+def all_schemes(
     directory: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -153,34 +206,14 @@ def directory(
     ],
 ):
     """
-    Validate all schemes in a directory
+    Validate all schemes in a directory. Calls the scheme command for each scheme.
     """
     errors = []
     for schemeinfo in directory.glob("**/info.json"):
         try:
-            validate_name(schemeinfo)
-        except Exception as e:
-            errors.append(str(e))
-
-        try:
-            bedfile = schemeinfo.parent / "primer.bed"
-            validate_bedfile(bedfile)
-        except Exception as e:
-            errors.append(str(e))
-
-        try:
-            validate_hashes(schemeinfo)
+            scheme(schemeinfo)
         except Exception as e:
             errors.append(str(e))
 
     if errors:
         raise UsageError(message="\n".join(errors))
-
-
-if __name__ == "__main__":
-    try:
-        validate_bedfile(
-            pathlib.Path("/Users/kentcg/primal-page/tests/test_input/v1.primer.bed")
-        )
-    except Exception as e:
-        raise UsageError(message=str(e)) from e
