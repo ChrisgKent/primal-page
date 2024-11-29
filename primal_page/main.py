@@ -34,7 +34,7 @@ from primal_page.schemas import (
     SchemeStatus,
 )
 from primal_page.validate import app as validate_app
-from primal_page.validate import validate_bedfile
+from primal_page.validate import validate_bedfile, validate_ref_select_file
 
 # Create the typer app
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
@@ -186,6 +186,10 @@ def create(
         list[pathlib.Path],
         typer.Option(help="Additional files to include in the ./work directory"),
     ] = [],
+    ref_select: Annotated[
+        Optional[tuple[str, pathlib.Path]],
+        typer.Option(help="Reference selection file. In the form 'chromosome file'"),
+    ] = None,
 ):
     """Create a new scheme in the required format"""
 
@@ -277,6 +281,10 @@ def create(
         contactinfo=contact_info,
     )
 
+    # Parse ref_select
+    if ref_select is not None:
+        validate_ref_select_file(info, ref_select[0], ref_select[1], primerbed)
+
     #####################################
     # Final validation and create files #
     #####################################
@@ -301,6 +309,10 @@ def create(
         # Write the reference.fasta file records
         with open(repo_dir / "reference.fasta", "w") as ref_file:
             SeqIO.write(reference_records, ref_file, "fasta")
+
+        # Add the reference selection files
+        if ref_select is not None:
+            info.add_refselect(ref_select[1], ref_select[0], repo_dir / "info.json")
 
         # Update the hashes in the info.json
         info.primer_bed_md5 = hash_file(repo_dir / "primer.bed")

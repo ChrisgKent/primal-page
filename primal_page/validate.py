@@ -1,6 +1,7 @@
 import pathlib
 
 import typer
+from Bio import SeqIO
 from click import UsageError
 from primalbedtools.bedfiles import BedLineParser, PrimerNameVersion, group_primer_pairs
 from typing_extensions import Annotated
@@ -103,9 +104,7 @@ def validate_hashes(infopath: pathlib.Path):
     """
     # Read in the info.json
     info = Info.model_validate_json(infopath.read_text())
-    info_scheme_path = (
-        info.schemename + "/" + str(info.ampliconsize) + "/" + info.schemeversion
-    )
+    info_scheme_path = info.get_schemepath()
 
     # Check the hashes
     if info.primer_bed_md5 != hash_file(infopath.parent / "primer.bed"):
@@ -119,12 +118,39 @@ def validate_hashes(infopath: pathlib.Path):
         )
 
 
+def validate_ref_and_bed(infopath: pathlib.Path):
+    """
+    Checks the chrom in bedfile and reference.fasta file.
+    """
+    # Read in the info.json
+    info = Info.model_validate_json(infopath.read_text())
+    info_scheme_path = info.get_schemepath()
+
+    # Read in the bedfile
+    _header, bedlines = BedLineParser.from_file(infopath.parent / "primer.bed")
+    chrom_names = {bedline.chrom for bedline in bedlines}
+
+    # Read in the reference.fasta
+    ref_index = SeqIO.index(infopath.parent / "reference.fasta", "fasta")
+
+    # Look for chroms in the bedfile that are not in the reference.fasta
+    delta = chrom_names - set(ref_index.keys())
+    if chrom_names - set(ref_index.keys()):
+        raise ValueError(
+            f"{info_scheme_path}: chroms in primer.bed that are not in reference.fasta: {delta}"
+        )
+    # Look for chroms in the reference.fasta that are not in the bedfile
+    delta = set(ref_index.keys()) - chrom_names
+    if delta:
+        raise ValueError(
+            f"{info_scheme_path}: chroms in reference.fasta that are not in primer.bed: {delta}"
+        )
+
+
 def validate_ref_selection(infopath: pathlib.Path):
     # Read in the info.json
     info = Info.model_validate_json(infopath.read_text())
-    info_scheme_path = (
-        info.schemename + "/" + str(info.ampliconsize) + "/" + info.schemeversion
-    )
+    info_scheme_path = info.get_schemepath()
 
     # Check the ref-selection
     if info.refselect is None:
@@ -148,6 +174,43 @@ def validate_ref_selection(infopath: pathlib.Path):
         )
 
 
+def validate_ref_select_final(primerschemes_dir: pathlib.Path):
+    """
+    Checks that the clades in the ref-select files exist
+    """
+
+    for info_path in primerschemes_dir.rglob("*info.json"):
+        info = Info.model_validate_json(info_path.read_text())
+        info_scheme_path = info.get_schemepath()
+
+        if info.refselect is None:
+            continue
+        else:
+            log.info(f"[blue]Checking[/blue]:\t{info_scheme_path}")
+
+        for _chrom, data in info.refselect.items():
+            file_path = info_path.parent / data["filename"]
+            # Check the file exists
+            if not file_path.is_file():
+                raise FileNotFoundError(f"{file_path} is not a file")
+
+            # Read in the fasta headers
+            with open(file_path) as fasta_file:
+                headers = [line.split() for line in fasta_file if line.startswith(">")]
+
+            alt_refs = {header[0].strip(): header[1].strip() for header in headers}
+
+            # Check the alt-refs schemes exist
+            version_dir = info_path.parent.parent
+            for _newchrom, clade in alt_refs.items():
+                clade_path = version_dir / f"{info.schemeversion}-{clade}"
+
+                if not clade_path.exists():
+                    raise FileNotFoundError(f"Could not find scheme {clade_path}")
+
+                log.debug(f"Found:\t{'/'.join(clade_path.parts[-3:])}")
+
+
 @app.command(no_args_is_help=True)
 def scheme(
     schemeinfo: Annotated[
@@ -162,9 +225,9 @@ def scheme(
     """
     Validate a single scheme
     """
-
     # Get the schemename
-    scheme_name = f"{schemeinfo.parent.parent.parent.name}/{schemeinfo.parent.parent.name}/{schemeinfo.parent.name}"
+    info = Info.model_validate_json(schemeinfo.read_text())
+    info_scheme_path = info.get_schemepath()
 
     errors = []
 
@@ -185,12 +248,16 @@ def scheme(
         validate_ref_selection(schemeinfo)
     except Exception as e:
         errors.append(str(e))
+    try:
+        validate_ref_and_bed(schemeinfo)
+    except Exception as e:
+        errors.append(str(e))
 
     if errors:
-        log.error(f"[red]Errored[/red]:\t[blue]{scheme_name}[/blue]")
+        log.error(f"[red]Errored[/red]:\t[blue]{info_scheme_path}[/blue]")
         raise UsageError(message="\n".join(errors))
     else:
-        log.info(f"[green]Success[/green]:\t[blue]{scheme_name}[/blue]")
+        log.info(f"[green]Success[/green]:\t[blue]{info_scheme_path}[/blue]")
 
 
 @app.command(no_args_is_help=True)
@@ -206,14 +273,20 @@ def all_schemes(
     ],
 ):
     """
-    Validate all schemes in a directory. Calls the scheme command for each scheme.
+    Validate all schemes in a directory. Calls the scheme command for each scheme and checks for final ref-select files.
     """
     errors = []
-    for schemeinfo in directory.glob("**/info.json"):
+    for schemeinfo in directory.rglob("*/info.json"):
         try:
             scheme(schemeinfo)
         except Exception as e:
             errors.append(str(e))
+
+    # Check for final ref-select files
+    try:
+        validate_ref_select_final(directory)
+    except Exception as e:
+        errors.append(str(e))
 
     if errors:
         raise UsageError(message="\n".join(errors))

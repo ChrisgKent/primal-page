@@ -1,7 +1,11 @@
+import hashlib
+import pathlib
 import re
 from enum import Enum
 from typing import Annotated
 
+from Bio import SeqIO
+from primalbedtools.bedfiles import BedLineParser
 from pydantic import BaseModel, PositiveInt
 from pydantic.functional_validators import AfterValidator
 
@@ -12,7 +16,16 @@ from primal_page.errors import (
     InvalidSchemeVersion,
 )
 
-INFO_SCHEMA = "v2.0.0"
+
+def hash_file(fname: pathlib.Path) -> str:
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+INFO_SCHEMA = "v2.1.0"
 
 SCHEMENAME_PATTERN = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 VERSION_PATTERN = r"^v\d+\.\d+\.\d+(-[a-z0-9]+)?$"
@@ -163,7 +176,7 @@ class Links(BaseModel):
         # Append the link to the correct list
         getattr(self, link_type).append(link)
 
-    def remove_link(
+    def link_remove(
         self,
         link_type: str,
         link: str,
@@ -194,34 +207,65 @@ class Info(BaseModel):
     articbedversion: BedfileVersion
     collections: set[Collection] = set()
     links: Links = Links()
+    refselect: dict[str, dict[str, str]] | None = None
+
     # Add the optional fields
     description: str | None = None
     derivedfrom: str | None = None
     contactinfo: str | None = None
 
-    def add_collection(self, collection: Collection):
+    def add_refselect(
+        self, ref_select_file: pathlib.Path, chrom: str, info_path: pathlib.Path
+    ):
+        """
+        Add a reference selection file to the ref select dictionary
+        """
+        if "-" in self.schemeversion:
+            raise ValueError(
+                "Cannot add reference selection to a version with a mapping suffix"
+            )
+
+        # Validate the reference selection file
+        validate_ref_select_file(self, chrom, ref_select_file, info_path)
+
+        # Read the ref selection into memory
+        new_ref_select_path = info_path.parent / f"{chrom}_refselect.fasta"
+
+        ref_select = list(SeqIO.parse(ref_select_file, "fasta"))
+        with open(new_ref_select_path, "w") as f:
+            SeqIO.write(ref_select, f, "fasta")
+
+        # Add the reference selection file
+        if self.refselect is None:
+            self.refselect = {}
+        self.refselect[chrom] = {
+            "md5": hash_file(new_ref_select_path),
+            "filename": new_ref_select_path.name,
+        }  # type: ignore
+
+    def collection_add(self, collection: Collection):
         """Add a collection to the collections set"""
         self.collections.add(collection)
 
-    def remove_collection(self, collection: Collection):
+    def collection_remove(self, collection: Collection):
         """
         Remove a collection from the collections set.
         Raises: KeyError if the collection is not in the set
         """
         self.collections.remove(collection)
 
-    def add_citation(self, citation: str):
+    def citation_add(self, citation: str):
         """Add a citation to the citations set"""
         self.citations.add(citation)
 
-    def remove_citation(self, citation: str):
+    def citation_remove(self, citation: str):
         """
         Remove a citation from the citations set.
         Raises: KeyError if the citation is not in the set
         """
         self.citations.remove(citation)
 
-    def add_author(self, author: str, author_index: int | None):
+    def author_add(self, author: str, author_index: int | None):
         """Add an author to the authors list"""
         if author not in self.authors:
             if author_index is None:
@@ -230,14 +274,14 @@ class Info(BaseModel):
                 # Insert is safe, will append if index is out of range
                 self.authors.insert(author_index, author)
 
-    def remove_author(self, author: str):
+    def author_remove(self, author: str):
         """
         Remove an author from the authors list.
         Raises: ValueError if the author is not in the list
         """
         self.authors.remove(author)
 
-    def reorder_authors(self, new_order: list[int]):
+    def author_reorders(self, new_order: list[int]):
         """
         Reorder the authors list
         Raises:
@@ -287,6 +331,46 @@ class Info(BaseModel):
 
     def get_schemepath(self) -> str:
         return f"{self.schemename}/{self.ampliconsize}/{self.schemeversion}"
+
+
+def validate_ref_select_file(
+    info: Info, chrom: str, ref_select: pathlib.Path, infopath: pathlib.Path
+):
+    """
+    Validate the reference selection file
+    """
+    # Read in the bedfile
+    _header, bedlines = BedLineParser.from_file(infopath.parent / "primer.bed")
+    bedline_chrom_names = {bedline.chrom for bedline in bedlines}
+
+    # Check the chrom is in the bedfile
+    if chrom not in bedline_chrom_names:
+        raise ValueError(f"Chromosome ({chrom}) not in primer.bed")
+
+    # Check the file exists
+    if not ref_select.is_file():
+        raise FileNotFoundError(f"{ref_select} is not a file")
+
+    # Check the file it self
+    ref_select_index = SeqIO.index(str(ref_select), "fasta")
+    # Check genomes len
+    ref_select_lengths = {len(seq) for seq in ref_select_index.values()}
+    if len(ref_select_lengths) != 1:
+        raise ValueError(
+            f"Chrom ({chrom}) in {infopath}:{ref_select.name} has different lengths: {ref_select_lengths}"
+        )
+    # Check chrom inside fasta
+    if chrom not in ref_select_index:
+        raise ValueError(f"Chrom ({chrom}) not in {infopath}:{ref_select.name}")
+
+    # Check the fasta headers
+    for record in ref_select_index.values():
+        if len(record.description.split()) != 2:
+            raise ValueError(
+                f"Chrom {chrom} in {infopath}:{ref_select.name} has fasta headers without clade tags"
+            )
+
+    return
 
 
 if __name__ == "__main__":

@@ -99,8 +99,10 @@ def write_info_json(info: Info, schemeinfo: pathlib.Path):
 
 
 def generate_files(info: Info, schemeinfo: pathlib.Path, pngs: list[pathlib.Path] = []):
+    """
+    Will add all pngs in the scheme directory to the README.md
+    """
     # Write the validated info.json
-
     if schemeinfo.name != "info.json":
         schemeinfo = schemeinfo / "info.json"
 
@@ -108,11 +110,15 @@ def generate_files(info: Info, schemeinfo: pathlib.Path, pngs: list[pathlib.Path
 
     # Update the README
     scheme_path = schemeinfo.parent
+
+    if not pngs:
+        pngs = list(scheme_path.rglob("*.png"))
+
     regenerate_readme(scheme_path, info, pngs)
 
 
 @app.command(no_args_is_help=True)
-def add_link(
+def link_add(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -150,7 +156,7 @@ def add_link(
 
 
 @app.command(no_args_is_help=True)
-def remove_link(
+def link_remove(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -177,7 +183,7 @@ def remove_link(
     info = Info.model_validate_json(schemeinfo.read_text())
 
     try:
-        info.links.remove_link(linkfield, link)
+        info.links.link_remove(linkfield, link)
         log.info(
             f"Removed link: [blue]{link}[/blue] from [blue]{linkfield}[/blue] for {info.get_schemepath()}"
         )
@@ -195,7 +201,7 @@ def remove_link(
 
 
 @app.command(no_args_is_help=True)
-def add_author(
+def author_add(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -214,7 +220,7 @@ def add_author(
 
     info = Info.model_validate_json(schemeinfo.read_text())
 
-    info.add_author(author, author_index)
+    info.author_add(author, author_index)
     log.info(f"Added author: [blue]{author}[/blue] to {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
@@ -222,7 +228,7 @@ def add_author(
 
 
 @app.command(no_args_is_help=True)
-def remove_author(
+def author_remove(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -235,7 +241,7 @@ def remove_author(
     info = Info.model_validate_json(schemeinfo.read_text())
 
     try:
-        info.remove_author(author)
+        info.author_remove(author)
         log.info(f"Removed author: [blue]{author}[/blue] from {info.get_schemepath()}")
     except KeyError:
         raise typer.BadParameter(f"{author} is already not present") from None
@@ -245,7 +251,7 @@ def remove_author(
 
 
 @app.command(no_args_is_help=True)
-def reorder_authors(
+def author_reorders(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -279,7 +285,7 @@ def reorder_authors(
         new_order = [int(x) for x in author_index.split()]
 
     try:
-        info.reorder_authors(new_order)
+        info.author_reorders(new_order)
         log.info(f"Reordered authors in {info.get_schemepath()}")
     except ValueError as e:
         raise typer.BadParameter(f"{e}") from None
@@ -291,7 +297,7 @@ def reorder_authors(
 
 
 @app.command(no_args_is_help=True)
-def add_citation(
+def citation_add(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -304,7 +310,7 @@ def add_citation(
     info = Info.model_validate_json(schemeinfo.read_text())
 
     # Add the citation
-    info.add_citation(citation)
+    info.citation_add(citation)
     log.info(f"Added citation: [blue]{citation}[/blue] to {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
@@ -312,7 +318,7 @@ def add_citation(
 
 
 @app.command(no_args_is_help=True)
-def remove_citation(
+def citation_remove(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -325,7 +331,7 @@ def remove_citation(
     info = Info.model_validate_json(schemeinfo.read_bytes())
 
     try:
-        info.remove_citation(citation)
+        info.citation_remove(citation)
         log.info(
             f"Removed citation: [blue]{citation}[/blue] from to {info.get_schemepath()}"
         )
@@ -337,7 +343,7 @@ def remove_citation(
 
 
 @app.command(no_args_is_help=True)
-def remove_collection(
+def collection_remove(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -351,7 +357,7 @@ def remove_collection(
 
     # Check if collection is already not in the list
     try:
-        info.remove_collection(collection)
+        info.collection_remove(collection)
         log.info(
             f"Removed collection: [blue]{collection}[/blue] from to {info.get_schemepath()}"
         )
@@ -363,7 +369,7 @@ def remove_collection(
 
 
 @app.command(no_args_is_help=True)
-def add_collection(
+def collection_add(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -375,7 +381,7 @@ def add_collection(
     """Add a Collection to the Collection list in the info.json file"""
     info = Info.model_validate_json(schemeinfo.read_text())
 
-    info.add_collection(collection)
+    info.collection_add(collection)
     log.info(f"Added collection: [blue]{collection}[/blue] to {info.get_schemepath()}")
 
     # Write the validated info.json and regenerate the README
@@ -383,7 +389,7 @@ def add_collection(
 
 
 @app.command(no_args_is_help=True)
-def change_description(
+def description(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -409,7 +415,7 @@ def change_description(
 
 
 @app.command(no_args_is_help=True)
-def change_derivedfrom(
+def derivedfrom(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -435,7 +441,7 @@ def change_derivedfrom(
 
 
 @app.command(no_args_is_help=True)
-def change_license(
+def license(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -461,7 +467,7 @@ def change_license(
 
 
 @app.command(no_args_is_help=True)
-def change_status(
+def status(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -490,7 +496,7 @@ def change_status(
 
 
 @app.command(no_args_is_help=True)
-def change_primerclass(
+def primerclass(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -516,7 +522,7 @@ def change_primerclass(
 
 
 @app.command(no_args_is_help=True)
-def change_contactinfo(
+def contactinfo(
     schemeinfo: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -556,4 +562,73 @@ def regenerate(
     Validates the info.json and regenerate the README.md
     """
     info = Info.model_validate_json(schemeinfo.read_text())
+
+    # Find any pngs
+    pngs = list(schemeinfo.parent.rglob("*.png"))
+    generate_files(info, schemeinfo, pngs)
+
+
+@app.command(no_args_is_help=True)
+def refselect_add(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            help="The path to info.json", readable=True, exists=True, writable=True
+        ),
+    ],
+    chrom: Annotated[str, typer.Argument(help="The chromosome to add")],
+    refselect: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            help="The reference selection file",
+            readable=True,
+            exists=True,
+            dir_okay=False,
+            file_okay=True,
+            resolve_path=True,
+        ),
+    ],
+):
+    """Add a refselect file to the info.json"""
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    try:
+        info.add_refselect(refselect, chrom, schemeinfo)
+        log.info(
+            f"Added refselect file: [blue]{refselect}[/blue] to {info.get_schemepath()}"
+        )
+    except ValueError as e:
+        raise typer.BadParameter(f"{e}") from e
+
+    # Write the validated info.json and regenerate the README
+    generate_files(info, schemeinfo)
+
+
+@app.command(no_args_is_help=True)
+def refselect_remove(
+    schemeinfo: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            help="The path to info.json",
+            readable=True,
+            exists=True,
+            writable=True,
+            file_okay=True,
+            dir_okay=False,
+        ),
+    ],
+    chrom: Annotated[str, typer.Argument(help="The chromosome to remove")],
+):
+    """
+    Removes a refselect file from the info.json
+    """
+    info = Info.model_validate_json(schemeinfo.read_text())
+
+    try:
+        if info.refselect is None:
+            raise KeyError(f"{chrom} is not in the refselect") from None
+        info.refselect.pop(chrom)
+    except KeyError:
+        raise typer.BadParameter(f"{chrom} is not in the refselect") from None
+
     generate_files(info, schemeinfo)

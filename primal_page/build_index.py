@@ -38,6 +38,16 @@ def parse_version(
 
     if info.refselect:  # Only add if it exists
         version_dict["refselect"] = info.refselect
+        # Add the urls
+        for _chrom, refselect_data in version_dict["refselect"].items():
+            refselect_data["url"] = create_rawlink(
+                repo_url,
+                scheme_name,
+                length,
+                version.name,
+                refselect_data["filename"],
+                pclass,
+            )
 
     # Add the primer.bed file
     primerbed = version_path / "primer.bed"
