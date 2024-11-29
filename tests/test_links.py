@@ -4,7 +4,7 @@ from primal_page.schemas import Links
 
 
 class TestLinks(unittest.TestCase):
-    def test_add_link(self):
+    def test_link_add(self):
         links = Links()
 
         # Add a link to all correct linkfield
@@ -17,21 +17,21 @@ class TestLinks(unittest.TestCase):
         with self.assertRaises(AttributeError):
             links.append_link("invalid", linktoadd)
 
-    def test_remove_link(self):
+    def test_link_remove(self):
         linktoremove = "https://example.com"
         links = Links(protocols=[linktoremove])
 
         # Remove the link from protocols
-        links.remove_link("protocols", linktoremove)
+        links.link_remove("protocols", linktoremove)
         self.assertEqual(links.protocols, [])
 
         # Remove a link from an incorrect linkfield
         with self.assertRaises(AttributeError):
-            links.remove_link("invalid", linktoremove)
+            links.link_remove("invalid", linktoremove)
 
         # Remove a link that is not in the linkfield
         with self.assertRaises(ValueError):
-            links.remove_link("protocols", linktoremove)
+            links.link_remove("protocols", linktoremove)
 
 
 if __name__ == "__main__":

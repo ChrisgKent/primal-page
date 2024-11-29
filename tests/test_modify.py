@@ -30,7 +30,7 @@ class TestAddAuthor(unittest.TestCase):
     def setUp(self) -> None:
         self.info = base_info
 
-    def test_add_author_append(self):
+    def test_author_add_append(self):
         """Test adding an author to the Info object"""
 
         local_info = deepcopy(self.info)
@@ -40,12 +40,12 @@ class TestAddAuthor(unittest.TestCase):
         self.assertNotIn(new_author, local_info.authors)
 
         # Append the author
-        local_info.add_author(new_author, None)
+        local_info.author_add(new_author, None)
 
         # Check the author is present at the end
         self.assertEqual(local_info.authors[-1], new_author)
 
-    def test_add_author_insert(self):
+    def test_author_add_insert(self):
         """Test adding an author to the Info object"""
 
         local_info = deepcopy(self.info)
@@ -56,12 +56,12 @@ class TestAddAuthor(unittest.TestCase):
         self.assertNotIn(new_author, local_info.authors)
 
         # Insert the author
-        local_info.add_author(new_author, new_index)
+        local_info.author_add(new_author, new_index)
 
         # Check the author is present at the index
         self.assertEqual(local_info.authors[new_index], new_author)
 
-    def test_add_author_invalid_index(self):
+    def test_author_add_invalid_index(self):
         """Test adding an author to the Info object with an invalid index"""
 
         local_info = deepcopy(self.info)
@@ -72,7 +72,7 @@ class TestAddAuthor(unittest.TestCase):
         self.assertNotIn(new_author, local_info.authors)
 
         # Insert the author
-        local_info.add_author(new_author, new_index)
+        local_info.author_add(new_author, new_index)
 
         # Check the author is present at the end
         self.assertEqual(local_info.authors[-1], new_author)
@@ -82,7 +82,7 @@ class TestRemoveAuthor(unittest.TestCase):
     def setUp(self) -> None:
         self.info = base_info
 
-    def test_remove_author_valid(self):
+    def test_author_remove_valid(self):
         """Test removing an author from the Info object"""
 
         local_info = deepcopy(self.info)
@@ -92,12 +92,12 @@ class TestRemoveAuthor(unittest.TestCase):
         self.assertIn(author_to_remove, local_info.authors)
 
         # Remove the author
-        local_info.remove_author(author_to_remove)
+        local_info.author_remove(author_to_remove)
 
         # Check the author is not present
         self.assertNotIn(author_to_remove, local_info.authors)
 
-    def test_remove_author_invalid(self):
+    def test_author_remove_invalid(self):
         """Test removing an author from the Info object"""
 
         local_info = deepcopy(self.info)
@@ -108,14 +108,14 @@ class TestRemoveAuthor(unittest.TestCase):
 
         # Remove the author
         with self.assertRaises(ValueError):
-            local_info.remove_author(author_to_remove)
+            local_info.author_remove(author_to_remove)
 
 
 class TestReorderAuthors(unittest.TestCase):
     def setUp(self) -> None:
         self.info = base_info
 
-    def test_reorder_authors_valid(self):
+    def test_author_reorders_valid(self):
         """Test reordering authors in the Info object"""
 
         local_info = deepcopy(self.info)
@@ -125,12 +125,12 @@ class TestReorderAuthors(unittest.TestCase):
         self.assertEqual(local_info.authors, ["artic", "developer"])
 
         # Reorder the authors
-        local_info.reorder_authors(new_order)
+        local_info.author_reorders(new_order)
 
         # Check the authors are in the correct order
         self.assertEqual(local_info.authors, ["developer", "artic"])
 
-    def test_reorder_authors_invalid_index(self):
+    def test_author_reorders_invalid_index(self):
         """Test reordering authors in the Info object with an invalid index"""
 
         local_info = deepcopy(self.info)
@@ -141,9 +141,9 @@ class TestReorderAuthors(unittest.TestCase):
 
         # Reorder the authors
         with self.assertRaises(IndexError):
-            local_info.reorder_authors(new_order)
+            local_info.author_reorders(new_order)
 
-    def test_reorder_authors_duplicate_index(self):
+    def test_author_reorders_duplicate_index(self):
         """Test reordering authors in the Info object with a duplicate index"""
 
         local_info = deepcopy(self.info)
@@ -154,7 +154,7 @@ class TestReorderAuthors(unittest.TestCase):
 
         # Reorder the authors
         with self.assertRaises(ValueError):
-            local_info.reorder_authors(new_order)
+            local_info.author_reorders(new_order)
 
     def test_no_authors_lost(self):
         """Test reordering authors in the Info object with a duplicate index"""
@@ -166,7 +166,7 @@ class TestReorderAuthors(unittest.TestCase):
         self.assertEqual(local_info.authors, ["artic", "developer"])
 
         # Reorder the authors
-        local_info.reorder_authors(new_order)
+        local_info.author_reorders(new_order)
 
         # Check the authors are in the correct order
         self.assertEqual(local_info.authors, ["developer", "artic"])
@@ -176,7 +176,7 @@ class TestAddCitation(unittest.TestCase):
     def setUp(self) -> None:
         self.info = base_info
 
-    def test_add_citation(self):
+    def test_citation_add(self):
         """Test adding a citation to the Info object"""
 
         local_info = deepcopy(self.info)
@@ -186,7 +186,7 @@ class TestAddCitation(unittest.TestCase):
         self.assertNotIn(new_citation, local_info.citations)
 
         # Append the citation
-        local_info.add_citation(new_citation)
+        local_info.citation_add(new_citation)
 
         # Check the citation is present at the end
         self.assertIn(new_citation, local_info.citations)
@@ -196,7 +196,7 @@ class TestRemoveCitation(unittest.TestCase):
     def setUp(self) -> None:
         self.info = base_info
 
-    def test_remove_citation_valid(self):
+    def test_citation_remove_valid(self):
         """Test removing a citation from the Info object"""
 
         local_info = deepcopy(self.info)
@@ -206,12 +206,12 @@ class TestRemoveCitation(unittest.TestCase):
         self.assertIn(citation_to_remove, local_info.citations)
 
         # Remove the citation
-        local_info.remove_citation(citation_to_remove)
+        local_info.citation_remove(citation_to_remove)
 
         # Check the citation is not present
         self.assertNotIn(citation_to_remove, local_info.citations)
 
-    def test_remove_citation_invalid(self):
+    def test_citation_remove_invalid(self):
         """Test removing a citation from the Info object"""
 
         local_info = deepcopy(self.info)
@@ -222,14 +222,14 @@ class TestRemoveCitation(unittest.TestCase):
 
         # Remove the citation
         with self.assertRaises(KeyError):
-            local_info.remove_citation(citation_to_remove)
+            local_info.citation_remove(citation_to_remove)
 
 
 class TestAddCollection(unittest.TestCase):
     def setUp(self) -> None:
         self.info = base_info
 
-    def test_add_collection(self):
+    def test_collection_add(self):
         """Test adding a collection to the Info object"""
 
         local_info = deepcopy(self.info)
@@ -239,7 +239,7 @@ class TestAddCollection(unittest.TestCase):
         self.assertNotIn(new_collection, local_info.collections)
 
         # Append the collection
-        local_info.add_collection(new_collection)
+        local_info.collection_add(new_collection)
 
         # Check the collection is present at the end
         self.assertIn(new_collection, local_info.collections)
@@ -249,7 +249,7 @@ class TestRemoveCollection(unittest.TestCase):
     def setUp(self) -> None:
         self.info = base_info
 
-    def test_remove_collection_valid(self):
+    def test_collection_remove_valid(self):
         """Test removing a collection from the Info object"""
 
         local_info = deepcopy(self.info)
@@ -259,12 +259,12 @@ class TestRemoveCollection(unittest.TestCase):
         self.assertIn(collection_to_remove, local_info.collections)
 
         # Remove the collection
-        local_info.remove_collection(collection_to_remove)
+        local_info.collection_remove(collection_to_remove)
 
         # Check the collection is not present
         self.assertNotIn(collection_to_remove, local_info.collections)
 
-    def test_remove_collection_invalid(self):
+    def test_collection_remove_invalid(self):
         """Test removing a collection from the Info object"""
 
         local_info = deepcopy(self.info)
@@ -275,7 +275,7 @@ class TestRemoveCollection(unittest.TestCase):
 
         # Remove the collection
         with self.assertRaises(KeyError):
-            local_info.remove_collection(collection_to_remove)
+            local_info.collection_remove(collection_to_remove)
 
 
 class TestChangeDescription(unittest.TestCase):

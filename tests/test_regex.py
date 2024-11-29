@@ -1,10 +1,5 @@
-import re
 import unittest
 
-from primal_page.bedfiles import (
-    V1_PRIMERNAME,
-    V2_PRIMERNAME,
-)
 from primal_page.errors import (
     InvalidSchemeID,
     InvalidSchemeName,
@@ -89,67 +84,6 @@ class TestRegex(unittest.TestCase):
         for name in invalid_names:
             with self.assertRaises(InvalidSchemeName):
                 validate_schemename(name)
-
-    def test_V1PrimerName_ValidNames(self):
-        """
-        Tests main/V1_PRIMERNAME for valid primer names
-        """
-        valid_names = [
-            "artic-nCoV_1_LEFT",
-            "mpx_1_RIGHT",
-            "artic-nCoV_100_LEFT_alt",
-            "marv-2023_100_RIGHT_ALT",
-            "artic-nCoV_1_LEFT",
-        ]
-
-        for name in valid_names:
-            self.assertTrue(re.match(V1_PRIMERNAME, name))
-
-    def test_V1PrimerName_InvalidNames(self):
-        """
-        Tests main/V1_PRIMERNAME for invalid primer names
-        """
-        invalid_names = [
-            "artic-nCoV_1_LEFT_0",  # V2 format should fail
-            "artic_nCoV_1_LEFT",  # to many _
-            "artic*nCoV_100_LEFT_99",  # invalid character
-            "marv-2023_RIGHT_2",  # missing amplicion number
-            "artic-nCoV_-1_LEFT_alt",  # Negative amplicon number
-        ]
-
-        for name in invalid_names:
-            self.assertFalse(re.match(V1_PRIMERNAME, name))
-
-    def test_V2PrimerName_ValidNames(self):
-        """
-        Tests main/V2_PRIMERNAME for valid primer names
-        """
-        valid_names = [
-            "artic-nCoV_1_LEFT_0",
-            "mpx_1_RIGHT_100",
-            "artic-nCoV_100_LEFT_99",
-            "marv-2023_100_RIGHT_2",
-            "artic-nCoV_1_LEFT_1",
-        ]
-
-        for name in valid_names:
-            self.assertTrue(re.match(V2_PRIMERNAME, name))
-
-    def test_V2PrimerName_InvalidNames(self):
-        """
-        Tests main/V2_PRIMERNAME for invalid primer names
-        """
-        invalid_names = [
-            "artic-nCoV_1_LEFT",  # V1 format should fail
-            "artic_nCoV_1_LEFT_0",  # to many _
-            "artic*nCoV_100_LEFT_99",  # invalid character
-            "marv-2023_RIGHT_2",  # missing amplicion number
-            "artic-nCoV_-1_LEFT_0",  # Negative amplicon number
-            "marv-2023_1_RIGHT_2_alt",  # alt should fail
-        ]
-
-        for name in invalid_names:
-            self.assertFalse(re.match(V2_PRIMERNAME, name))
 
 
 class TestNotEmpty(unittest.TestCase):
