@@ -80,7 +80,8 @@ def regenerate(
     # Final validation and create files #
     #####################################
 
-    generate_files(info, schemeinfo)
+    pngs = list(schemeinfo.parent.rglob("*.png"))
+    generate_files(info, schemeinfo, pngs)
 
 
 @app.command(no_args_is_help=True)
