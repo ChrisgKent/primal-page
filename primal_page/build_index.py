@@ -71,11 +71,11 @@ def parse_version(
     # Check the hashes in the info.json file match the generated hashes
     if version_dict["primer_bed_md5"] != info.primer_bed_md5:
         raise ValueError(
-            f"MD5 mismatch for {schemeid}:primer.bed: info ({info.primer_bed_md5}) != file ({version_dict["primer_bed_md5"]})"
+            f"MD5 mismatch for {schemeid}:primer.bed: info ({info.primer_bed_md5}) != file ({version_dict['primer_bed_md5']})"
         )
     if version_dict["reference_fasta_md5"] != info.reference_fasta_md5:
         raise ValueError(
-            f"MD5 mismatch for {schemeid}:reference.fasta: info ({info.reference_fasta_md5}) != file ({version_dict["reference_fasta_md5"]})"
+            f"MD5 mismatch for {schemeid}:reference.fasta: info ({info.reference_fasta_md5}) != file ({version_dict['reference_fasta_md5']})"
         )
 
     return version_dict
