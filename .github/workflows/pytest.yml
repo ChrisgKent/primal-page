@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     paths:
-      - "primal-page/**"
+      - "primal_page/**"
       - "tests/**"
       - "pyproject.toml"
       - "poetry.lock"
