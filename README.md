@@ -225,6 +225,7 @@ $ primal-page [OPTIONS] COMMAND [ARGS]...
 * `download`: Download schemes from the index.json
 * `modify`: Modify an existing scheme's metadata...
 * `remove`: Remove a scheme's version from the repo,...
+* `validate`: Validate a scheme
 
 ## `primal-page aliases`
 
@@ -339,6 +340,7 @@ $ primal-page create [OPTIONS]
 * `--fix / --no-fix`: Attempt to fix the scheme  [default: no-fix]
 * `--contact-info TEXT`: Contact information
 * `--additional-files PATH`: Additional files to include in the ./work directory
+* `--ref-select <TEXT PATH>...`: Reference selection file. In the form 'chromosome file'
 * `--help`: Show this message and exit.
 
 
@@ -415,31 +417,33 @@ $ primal-page modify [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `add-author`: Append an author to the authors list in...
-* `add-citation`: Append an citation to the authors list in...
-* `add-collection`: Add a Collection to the Collection list in...
-* `add-link`: Add a link to the selected link field to...
-* `change-contactinfo`: Change the contactinfo field in the info.json
-* `change-derivedfrom`: Replaces the derivedfrom in the info.json...
-* `change-description`: Replaces the description in the info.json...
-* `change-license`: Replaces the license in the info.json file
-* `change-primerclass`: Change the primerclass field in the info.json
-* `change-status`: Change the status field in the info.json
+* `author-add`: Append an author to the authors list in...
+* `author-remove`: Remove an author from the authors list in...
+* `author-reorders`: Reorder the authors in the info.json file
+* `citation-add`: Append an citation to the authors list in...
+* `citation-remove`: Remove an citation form the authors list...
+* `collection-add`: Add a Collection to the Collection list in...
+* `collection-remove`: Remove an Collection from the Collection...
+* `contactinfo`: Change the contactinfo field in the info.json
+* `derivedfrom`: Replaces the derivedfrom in the info.json...
+* `description`: Replaces the description in the info.json...
+* `license`: Replaces the license in the info.json file
+* `link-add`: Add a link to the selected link field to...
+* `link-remove`: Add a link to the selected link field to...
+* `primerclass`: Change the primerclass field in the info.json
+* `refselect-add`: Add a refselect file to the info.json
+* `refselect-remove`: Removes a refselect file from the info.json
 * `regenerate`: Validates the info.json and regenerate the...
-* `remove-author`: Remove an author from the authors list in...
-* `remove-citation`: Remove an citation form the authors list...
-* `remove-collection`: Remove an Collection from the Collection...
-* `remove-link`: Add a link to the selected link field to...
-* `reorder-authors`: Reorder the authors in the info.json file
+* `status`: Change the status field in the info.json
 
-### `primal-page modify add-author`
+### `primal-page modify author-add`
 
 Append an author to the authors list in the info.json file
 
 **Usage**:
 
 ```console
-$ primal-page modify add-author [OPTIONS] SCHEMEINFO AUTHOR
+$ primal-page modify author-add [OPTIONS] SCHEMEINFO AUTHOR
 ```
 
 **Arguments**:
@@ -452,14 +456,52 @@ $ primal-page modify add-author [OPTIONS] SCHEMEINFO AUTHOR
 * `--author-index INTEGER`: The 0-based index to insert the author at. Default is the end  [required]
 * `--help`: Show this message and exit.
 
-### `primal-page modify add-citation`
+### `primal-page modify author-remove`
+
+Remove an author from the authors list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify author-remove [OPTIONS] SCHEMEINFO AUTHOR
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `AUTHOR`: The author to remove  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify author-reorders`
+
+Reorder the authors in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify author-reorders [OPTIONS] SCHEMEINFO [AUTHOR_INDEX]
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `[AUTHOR_INDEX]`: The indexes in the new order, separated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify citation-add`
 
 Append an citation to the authors list in the info.json file
 
 **Usage**:
 
 ```console
-$ primal-page modify add-citation [OPTIONS] SCHEMEINFO CITATION
+$ primal-page modify citation-add [OPTIONS] SCHEMEINFO CITATION
 ```
 
 **Arguments**:
@@ -471,14 +513,33 @@ $ primal-page modify add-citation [OPTIONS] SCHEMEINFO CITATION
 
 * `--help`: Show this message and exit.
 
-### `primal-page modify add-collection`
+### `primal-page modify citation-remove`
+
+Remove an citation form the authors list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify citation-remove [OPTIONS] SCHEMEINFO CITATION
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `CITATION`: The citation to remove  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify collection-add`
 
 Add a Collection to the Collection list in the info.json file
 
 **Usage**:
 
 ```console
-$ primal-page modify add-collection [OPTIONS] SCHEMEINFO COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET|VARVAMP}
+$ primal-page modify collection-add [OPTIONS] SCHEMEINFO COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET|VARVAMP}
 ```
 
 **Arguments**:
@@ -490,14 +551,109 @@ $ primal-page modify add-collection [OPTIONS] SCHEMEINFO COLLECTION:{ARTIC|MODJA
 
 * `--help`: Show this message and exit.
 
-### `primal-page modify add-link`
+### `primal-page modify collection-remove`
+
+Remove an Collection from the Collection list in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify collection-remove [OPTIONS] SCHEMEINFO COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET|VARVAMP}
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET|VARVAMP}`: The Collection to remove  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify contactinfo`
+
+Change the contactinfo field in the info.json
+
+**Usage**:
+
+```console
+$ primal-page modify contactinfo [OPTIONS] SCHEMEINFO CONTACTINFO
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `CONTACTINFO`: The contact information for this scheme. Use 'None' to remove the contact info  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify derivedfrom`
+
+Replaces the derivedfrom in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify derivedfrom [OPTIONS] SCHEMEINFO DERIVEDFROM
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `DERIVEDFROM`: The new derivedfrom. Use 'None' to remove the derivedfrom  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify description`
+
+Replaces the description in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify description [OPTIONS] SCHEMEINFO DESCRIPTION
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `DESCRIPTION`: The new description. Use 'None' to remove the description  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify license`
+
+Replaces the license in the info.json file
+
+**Usage**:
+
+```console
+$ primal-page modify license [OPTIONS] SCHEMEINFO LICENSE
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `LICENSE`: The new license. Use 'None' show the work is not licensed (Not recommended)  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify link-add`
 
 Add a link to the selected link field to the info.json
 
 **Usage**:
 
 ```console
-$ primal-page modify add-link [OPTIONS] SCHEMEINFO LINKFIELD LINK
+$ primal-page modify link-add [OPTIONS] SCHEMEINFO LINKFIELD LINK
 ```
 
 **Arguments**:
@@ -510,90 +666,34 @@ $ primal-page modify add-link [OPTIONS] SCHEMEINFO LINKFIELD LINK
 
 * `--help`: Show this message and exit.
 
-### `primal-page modify change-contactinfo`
+### `primal-page modify link-remove`
 
-Change the contactinfo field in the info.json
+Add a link to the selected link field to the info.json
 
 **Usage**:
 
 ```console
-$ primal-page modify change-contactinfo [OPTIONS] SCHEMEINFO CONTACTINFO
+$ primal-page modify link-remove [OPTIONS] SCHEMEINFO LINKFIELD LINK
 ```
 
 **Arguments**:
 
 * `SCHEMEINFO`: The path to info.json  [required]
-* `CONTACTINFO`: The contact information for this scheme. Use 'None' to remove the contact info  [required]
+* `LINKFIELD`: The link field to remove from. protocols, validation, homepage, vendors, misc  [required]
+* `LINK`: The link to remove.  [required]
 
 **Options**:
 
 * `--help`: Show this message and exit.
 
-### `primal-page modify change-derivedfrom`
-
-Replaces the derivedfrom in the info.json file
-
-**Usage**:
-
-```console
-$ primal-page modify change-derivedfrom [OPTIONS] SCHEMEINFO DERIVEDFROM
-```
-
-**Arguments**:
-
-* `SCHEMEINFO`: The path to info.json  [required]
-* `DERIVEDFROM`: The new derivedfrom. Use 'None' to remove the derivedfrom  [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-### `primal-page modify change-description`
-
-Replaces the description in the info.json file
-
-**Usage**:
-
-```console
-$ primal-page modify change-description [OPTIONS] SCHEMEINFO DESCRIPTION
-```
-
-**Arguments**:
-
-* `SCHEMEINFO`: The path to info.json  [required]
-* `DESCRIPTION`: The new description. Use 'None' to remove the description  [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-### `primal-page modify change-license`
-
-Replaces the license in the info.json file
-
-**Usage**:
-
-```console
-$ primal-page modify change-license [OPTIONS] SCHEMEINFO LICENSE
-```
-
-**Arguments**:
-
-* `SCHEMEINFO`: The path to info.json  [required]
-* `LICENSE`: The new license. Use 'None' show the work is not licensed (Not recommended)  [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-### `primal-page modify change-primerclass`
+### `primal-page modify primerclass`
 
 Change the primerclass field in the info.json
 
 **Usage**:
 
 ```console
-$ primal-page modify change-primerclass [OPTIONS] SCHEMEINFO PRIMERCLASS:{primerschemes}
+$ primal-page modify primerclass [OPTIONS] SCHEMEINFO PRIMERCLASS:{primerschemes}
 ```
 
 **Arguments**:
@@ -605,20 +705,40 @@ $ primal-page modify change-primerclass [OPTIONS] SCHEMEINFO PRIMERCLASS:{primer
 
 * `--help`: Show this message and exit.
 
-### `primal-page modify change-status`
+### `primal-page modify refselect-add`
 
-Change the status field in the info.json
+Add a refselect file to the info.json
 
 **Usage**:
 
 ```console
-$ primal-page modify change-status [OPTIONS] SCHEMEINFO [SCHEMESTATUS]:[withdrawn|deprecated|autogenerated|draft|tested|validated]
+$ primal-page modify refselect-add [OPTIONS] SCHEMEINFO CHROM REFSELECT
 ```
 
 **Arguments**:
 
 * `SCHEMEINFO`: The path to info.json  [required]
-* `[SCHEMESTATUS]:[withdrawn|deprecated|autogenerated|draft|tested|validated]`: The scheme class  [default: draft]
+* `CHROM`: The chromosome to add  [required]
+* `REFSELECT`: The reference selection file  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page modify refselect-remove`
+
+Removes a refselect file from the info.json
+
+**Usage**:
+
+```console
+$ primal-page modify refselect-remove [OPTIONS] SCHEMEINFO CHROM
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+* `CHROM`: The chromosome to remove  [required]
 
 **Options**:
 
@@ -642,97 +762,20 @@ $ primal-page modify regenerate [OPTIONS] SCHEMEINFO
 
 * `--help`: Show this message and exit.
 
-### `primal-page modify remove-author`
+### `primal-page modify status`
 
-Remove an author from the authors list in the info.json file
+Change the status field in the info.json
 
 **Usage**:
 
 ```console
-$ primal-page modify remove-author [OPTIONS] SCHEMEINFO AUTHOR
+$ primal-page modify status [OPTIONS] SCHEMEINFO [SCHEMESTATUS]:[withdrawn|deprecated|autogenerated|draft|tested|validated]
 ```
 
 **Arguments**:
 
 * `SCHEMEINFO`: The path to info.json  [required]
-* `AUTHOR`: The author to remove  [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-### `primal-page modify remove-citation`
-
-Remove an citation form the authors list in the info.json file
-
-**Usage**:
-
-```console
-$ primal-page modify remove-citation [OPTIONS] SCHEMEINFO CITATION
-```
-
-**Arguments**:
-
-* `SCHEMEINFO`: The path to info.json  [required]
-* `CITATION`: The citation to remove  [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-### `primal-page modify remove-collection`
-
-Remove an Collection from the Collection list in the info.json file
-
-**Usage**:
-
-```console
-$ primal-page modify remove-collection [OPTIONS] SCHEMEINFO COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET|VARVAMP}
-```
-
-**Arguments**:
-
-* `SCHEMEINFO`: The path to info.json  [required]
-* `COLLECTION:{ARTIC|MODJADJI|QUICK-LAB|COMMUNITY|WASTE-WATER|CLINICAL-ISOLATES|WHOLE-GENOME|PANEL|MULTI-TARGET|VARVAMP}`: The Collection to remove  [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-### `primal-page modify remove-link`
-
-Add a link to the selected link field to the info.json
-
-**Usage**:
-
-```console
-$ primal-page modify remove-link [OPTIONS] SCHEMEINFO LINKFIELD LINK
-```
-
-**Arguments**:
-
-* `SCHEMEINFO`: The path to info.json  [required]
-* `LINKFIELD`: The link field to remove from. protocols, validation, homepage, vendors, misc  [required]
-* `LINK`: The link to remove.  [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-### `primal-page modify reorder-authors`
-
-Reorder the authors in the info.json file
-
-**Usage**:
-
-```console
-$ primal-page modify reorder-authors [OPTIONS] SCHEMEINFO [AUTHOR_INDEX]
-```
-
-**Arguments**:
-
-* `SCHEMEINFO`: The path to info.json  [required]
-* `[AUTHOR_INDEX]`: The indexes in the new order, separated by spaces. e.g. 1 0 2. Any indexes not provided will be appended to the end
+* `[SCHEMESTATUS]:[withdrawn|deprecated|autogenerated|draft|tested|validated]`: The scheme class  [default: draft]
 
 **Options**:
 
@@ -755,3 +798,59 @@ $ primal-page remove [OPTIONS] SCHEMEINFO
 **Options**:
 
 * `--help`: Show this message and exit.
+
+## `primal-page validate`
+
+Validate a scheme
+
+**Usage**:
+
+```console
+$ primal-page validate [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `all-schemes`: Validate all schemes in a directory.
+* `scheme`: Validate a single scheme
+
+### `primal-page validate all-schemes`
+
+Validate all schemes in a directory. Calls the scheme command for each scheme and checks for final ref-select files.
+
+**Usage**:
+
+```console
+$ primal-page validate all-schemes [OPTIONS] DIRECTORY
+```
+
+**Arguments**:
+
+* `DIRECTORY`: The path to the directory  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `primal-page validate scheme`
+
+Validate a single scheme
+
+**Usage**:
+
+```console
+$ primal-page validate scheme [OPTIONS] SCHEMEINFO
+```
+
+**Arguments**:
+
+* `SCHEMEINFO`: The path to info.json  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
