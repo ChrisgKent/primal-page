@@ -36,6 +36,9 @@ def parse_version(
     version_dict["ampliconsize"] = info.ampliconsize
     version_dict["articbedversion"] = info.articbedversion.value
 
+    #
+    version_dict["collections"] = info.collections
+
     if info.refselect:  # Only add if it exists
         version_dict["refselect"] = info.refselect
         # Add the urls
