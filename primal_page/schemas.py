@@ -147,6 +147,9 @@ class Collection(Enum):
     # Other Scheme Generators
     VARVAMP = "VARVAMP"
 
+    def __ord__(self):
+        return self.value
+
 
 class Links(BaseModel):
     protocols: list[str] = []
