@@ -26,7 +26,7 @@
     ],
     "license": "CC BY-SA 4.0",
     "primerclass": "primerschemes",
-    "infoschema": "v2.0.0",
+    "infoschema": "v2.1.0",
     "articbedversion": "v3.0",
     "collections": [],
     "links": {
@@ -36,6 +36,7 @@
         "vendors": [],
         "misc": []
     },
+    "refselect": null,
     "description": null,
     "derivedfrom": null,
     "contactinfo": null
