@@ -6,6 +6,7 @@ import requests
 import typer
 from typing_extensions import Annotated
 
+from primal_page.config import INDEX_JSON_URL
 from primal_page.logging import log
 from primal_page.schemas import validate_schemename, validate_schemeversion
 
@@ -116,7 +117,7 @@ def all(
     ],
     index_url: Annotated[
         str, typer.Option(help="The URL to the index.json")
-    ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
+    ] = INDEX_JSON_URL,
 ):
     """Download all schemes from the index.json"""
     # Fetch the index and store in memory
@@ -145,7 +146,7 @@ def scheme(
     ],
     index_url: Annotated[
         str, typer.Option(help="The URL to the index.json")
-    ] = "https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json",
+    ] = INDEX_JSON_URL,
 ):
     """Download a scheme from the index.json"""
 
