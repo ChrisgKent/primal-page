@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "primal-page"
-version = "1.11.2"
+version = "1.11.3"
 description = "Tooling and schemas for the primerschemes index"
 authors = ["ChrisKent <chrisgkent@gmail.com>"]
 readme = "README.md"
